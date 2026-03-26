@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "node ./src/whiteboard.ts ../.env"
+    "dev": "node ./src/whiteboard.ts ../client/.env"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
