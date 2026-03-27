@@ -10,6 +10,10 @@
 	let isDrawing = false;
 	let currentStroke: Stroke | null = null;
 
+	let isErasing = false;
+	let erasingPoint1: StrokePoint | null = null;
+	let erasingPoint2: StrokePoint | null = null;
+
 	onMount(() => {
 		canvas.width = window.innerWidth;
     	canvas.height = window.innerHeight;
@@ -27,38 +31,70 @@
 	function startDraw(e: PointerEvent) {
 		e.preventDefault();
 
-		isDrawing = true;
+		const drawing = false; //TODO: Replacce this
 
-		currentStroke = {
-			id: crypto.randomUUID(),
-			color: '#000',
-			width: 2,
-			points: []
-		};
+		if (drawing) { //TODO: Replacce this
+			isDrawing = true;
 
-		const point = getPoint(e);
-		currentStroke.points.push(point, point);
+			currentStroke = {
+				id: crypto.randomUUID(),
+				color: '#000',
+				width: 2,
+				points: []
+			};
+
+			const point = getPoint(e);
+			currentStroke.points.push(point, point);
+		} else if (!drawing) { //TODO: Replacce this
+			isErasing = true;
+
+			const point = getPoint(e);
+			erasingPoint1 = point;
+			erasingPoint2 = point;
+		}
 	}
 
 	function draw(e: PointerEvent) {
-		if (!isDrawing || !currentStroke || !ctx) return;
-
 		const point = getPoint(e);
-		currentStroke.points.push(point);
 
-		// Draw only the latest segment (fast)
-		drawSmoothSegment(ctx, currentStroke);
+		if (isDrawing && currentStroke && ctx) {
+			currentStroke.points.push(point);
+
+			// Draw only the latest segment (fast)
+			drawSmoothSegment(ctx, currentStroke);
+		} else if (isErasing && erasingPoint1 && erasingPoint2) {
+			erasingPoint1 = erasingPoint2;
+			erasingPoint2 = point;
+
+			$strokesStore.entries().forEach((s: [number, Stroke], strokeIndex: number) => {
+				let stroke = s[1];
+				
+				stroke.points.forEach((point: StrokePoint, pointIndex: number, points: StrokePoint[]) => {
+					if ( pointIndex !== 0) {
+						const p0 = points[pointIndex - 1];
+						if (line2lineIntersecting(p0, point, erasingPoint1!, erasingPoint2!)) {
+							getStrokes().delete(strokeIndex) // TODO: probably not ideal to do this like this...
+						}
+					}
+				})
+			})
+		}
 	}
 
 	function endDraw() {
-		if (!isDrawing) return;
+		if (isDrawing) {
+			isDrawing = false;
 
-		isDrawing = false;
+			// Push to Yjs
+			getStrokes().push([currentStroke]);
 
-		// Push to Yjs
-		getStrokes().push([currentStroke]);
+			currentStroke = null;
+		} else if (isErasing) {
+			isErasing = false;
 
-		currentStroke = null;
+			erasingPoint1 = null;
+			erasingPoint2 = null;
+		}
 	}
 
 	function getPoint(e: PointerEvent): StrokePoint {
@@ -118,7 +154,6 @@
 		ctx.clearRect(0, 0, canvas.width, canvas.height)
 
 		$strokesStore.entries().forEach((s) => {
-			console.log(s)
 			if (!ctx) return;
 			let stroke = s[1] as unknown as Stroke;
 			drawStroke(ctx, stroke);
@@ -151,6 +186,37 @@
 		ctx.lineJoin = 'round'
 
 		ctx.stroke()
+	}
+
+	// Source - https://stackoverflow.com/a/31704928 Posted by markE Retrieved 2026-03-27, License - CC BY-SA 3.0
+	function line2lineIntersecting(p0: StrokePoint, p1: StrokePoint, p2: StrokePoint, p3: StrokePoint): Boolean {
+
+		let unknownA 		= (p3.x-p2.x) * (p0.y-p2.y) - (p3.y-p2.y) * (p0.x-p2.x);
+		let unknownB 		= (p1.x-p0.x) * (p0.y-p2.y) - (p1.y-p0.y) * (p0.x-p2.x);
+		const denominator  	= (p3.y-p2.y) * (p1.x-p0.x) - (p3.x-p2.x) * (p1.y-p0.y);        
+
+		// Test if Coincident
+		// If the denominator and numerator for the ua and ub are 0
+		//    then the two lines are coincident.    
+		if (unknownA == 0 && unknownB == 0 && denominator == 0) return false;
+
+		// Test if Parallel 
+		// If the denominator for the equations for ua and ub is 0
+		//     then the two lines are parallel. 
+		if (denominator == 0) return false;
+
+		// If the intersection of line segments is required 
+		// then it is only necessary to test if ua and ub lie between 0 and 1.
+		// Whichever one lies within that range then the corresponding
+		// line segment contains the intersection point. 
+		// If both lie within the range of 0 to 1 then 
+		// the intersection point is within both line segments. 
+		unknownA /= denominator;
+		unknownB /= denominator;
+
+		if(!(unknownA >= 0 && unknownA <= 1 && unknownB >= 0 && unknownB <= 1)) return false;
+
+		return true;
 	}
 </script>
 
