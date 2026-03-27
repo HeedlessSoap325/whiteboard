@@ -1,11 +1,19 @@
 <script lang="ts">
-	import type { Stroke, StrokePoint } from "$lib/types";
+	import { StrokeToolType, type Stroke, type StrokePoint, type StrokeTool } from "$lib/types";
     import { getStrokes } from "$lib/sync/provider";
 	import { onMount } from "svelte";
     import { strokesStore } from "$lib/stores/whiteboard";
+    import Toolbar from "./Toolbar.svelte";
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D | null = null;
+
+	let currentTool: StrokeTool = $state<StrokeTool>({
+		color: '#000',
+		width: 2,
+		type: StrokeToolType.PEN,
+		positionIndex: -1,
+	})
 
 	let isDrawing = false;
 	let currentStroke: Stroke | null = null;
@@ -31,21 +39,19 @@
 	function startDraw(e: PointerEvent) {
 		e.preventDefault();
 
-		const drawing = false; //TODO: Replacce this
-
-		if (drawing) { //TODO: Replacce this
+		if (currentTool.type === StrokeToolType.PEN) {
 			isDrawing = true;
 
 			currentStroke = {
 				id: crypto.randomUUID(),
-				color: '#000',
-				width: 2,
+				color: currentTool.color,
+				width: currentTool.width,
 				points: []
 			};
 
 			const point = getPoint(e);
 			currentStroke.points.push(point, point);
-		} else if (!drawing) { //TODO: Replacce this
+		} else if (currentTool.type === StrokeToolType.ERASER) {
 			isErasing = true;
 
 			const point = getPoint(e);
@@ -221,6 +227,7 @@
 </script>
 
 <canvas id="canvas" bind:this={canvas}></canvas>
+<Toolbar bind:currentTool></Toolbar>
 
 <style>
 	#canvas {

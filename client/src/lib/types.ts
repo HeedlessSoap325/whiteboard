@@ -10,3 +10,15 @@ export interface Stroke {
 	width: number,
 	points: StrokePoint[]
 }
+
+export enum StrokeToolType {
+	PEN,
+	ERASER,
+}
+
+export interface StrokeTool {
+	color: string,
+	width: number,
+	type: StrokeToolType,
+	positionIndex: number,
+}
