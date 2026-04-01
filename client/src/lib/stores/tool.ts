@@ -1,22 +1,26 @@
+import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { StrokeTool } from "$lib/types";
 
-export function createToolsStore() {
-    let value = $state<Array<StrokeTool>>();
+function createToolsStore() {
 	const key = "tools";
-  
-	value = [];
-  
+
+	let initial: StrokeTool[] = [];
+
 	if (browser) {
 		const item = localStorage.getItem(key);
-		if (item) value = JSON.parse(item);
+		if (item) initial = JSON.parse(item);
 	}
-  
-	$effect(() => {
-		localStorage.setItem(key, JSON.stringify(value));
-	});
 
-	return value;
+	const store = writable<StrokeTool[]>(initial);
+
+	if (browser) {
+		store.subscribe(value => {
+			localStorage.setItem(key, JSON.stringify(value));
+		});
+	}
+
+  return store;
 }
 
 export const toolsStore = createToolsStore();

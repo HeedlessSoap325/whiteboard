@@ -231,10 +231,12 @@
 
 <style>
 	#canvas {
-		position: absolute;
+		position: fixed;
 		top: 0;
 		left: 0;
 		margin: 0;
 		touch-action: none;
+		pointer-events: auto;
+		z-index: 0;
 	}
 </style>
