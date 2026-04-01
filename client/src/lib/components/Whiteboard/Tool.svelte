@@ -62,30 +62,80 @@
 	.tool {
 		cursor: pointer;
 		position: relative;
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		width: 70px;
+		height: 70px;
+
+		border-radius: 12px;
+		transition: background-color 0.2s ease, transform 0.1s ease;
+	}
+
+	.tool:hover {
+		background-color: rgba(0, 0, 0, 0.08);
+		transform: translateY(-2px);
+	}
+
+	.tool.selected {
+		background-color: rgba(0, 0, 0, 0.12);
+	}
+
+	.tool.selected:hover {
+		background-color: rgba(0, 0, 0, 0.18);
+	}
+
+	.tool-popover {
+		position: absolute;
+		top: 4px;
+		right: 4px;
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		width: 20px;
+		height: 20px;
+
+		border-radius: 6px;
+		background: rgba(255, 255, 255, 0.8);
+
+		box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+		cursor: pointer;
 	}
 
 	.popover {
 		position: absolute;
 		bottom: 110%;
-		left: 0;
+		left: 50%;
+		transform: translateX(-50%);
+
 		background: white;
-		border: 1px solid #ccc;
-		padding: 8px;
-		border-radius: 6px;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+		border: 1px solid #ddd;
+
+		padding: 10px;
+		border-radius: 10px;
+
+		box-shadow: 0 6px 18px rgba(0,0,0,0.2);
 		z-index: 20;
+
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
 	}
 
-	.tool-popover {
-		position: fixed;
-		z-index: 20;
+	.popover input[type="range"] {
+		width: 120px;
 	}
 
-	.tool.selected {
-		background-color: blue;
-	}
-
-	.tool:hover {
-		background-color: red;
+	.popover input[type="color"] {
+		width: 100%;
+		height: 30px;
+		padding: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
 	}
 </style>

@@ -26,14 +26,24 @@
 <style>
 	#toolbar-container {
 		position: fixed;
-		display: flex;
-		flex-direction: row;
-		align-items: center;
+		left: 50%;
+		transform: translateX(-50%);
 		bottom: 20px;
-		z-index: 10;
-		background-color: aqua;
-		padding-inline: 50px;
 
-		gap: 20px;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+
+		padding: 12px 20px;
+
+		background: rgba(255, 255, 255, 0.9);
+		backdrop-filter: blur(10px);
+
+		border-radius: 16px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+		z-index: 10;
+
+		padding-inline: 50px;
 	}
 </style>
