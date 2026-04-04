@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
 	import { browser } from '$app/environment';
     import { getPresence } from "$lib/sync/provider";
-    import Strokes from "$lib/components/Whiteboard/Strokes.svelte";
+    import CanvasLayer from "$lib/components/layers/Canvas.svelte";
 
     let states = $state<any[]>([]);
 
@@ -21,4 +21,4 @@
     });
 </script>
 
-<Strokes></Strokes>
+<CanvasLayer></CanvasLayer>

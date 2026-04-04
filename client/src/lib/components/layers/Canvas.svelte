@@ -3,7 +3,7 @@
     import { getStrokes } from "$lib/sync/provider";
 	import { onMount } from "svelte";
     import { strokesStore } from "$lib/stores/whiteboard";
-    import Toolbar from "./Toolbar.svelte";
+    import Toolbar from "$lib/components/Canvas/Toolbar.svelte";
     import { modeStore } from "$lib/stores/tool";
 
 	let canvas: HTMLCanvasElement;
