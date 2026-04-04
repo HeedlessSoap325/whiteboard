@@ -2,8 +2,8 @@
     import ArrowSVG from "$lib/assets/ArrowSVG.svelte";
     import EraserSVG from "$lib/assets/EraserSVG.svelte";
     import PenSVG from "$lib/assets/PenSVG.svelte";
-    import { toolsStore } from "$lib/stores/tool";
-    import { StrokeToolType, type StrokeTool } from "$lib/types";
+    import { modeStore, toolsStore } from "$lib/stores/tool";
+    import { Mode, StrokeToolType, type StrokeTool } from "$lib/types";
 
 	let {tool, toolIndex, currentTool = $bindable()}: {tool: StrokeTool, toolIndex: number, currentTool: StrokeTool} = $props();
 
@@ -26,10 +26,15 @@
 			})
 		);
 	})
+
+	function selectTool() {
+		currentTool = tool;
+		modeStore.set(Mode.DRAWING)
+	}
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class={`tool ${tool.positionIndex === currentTool.positionIndex ? 'selected' : ''}`} role="button" tabindex="0" onclick={() => {currentTool = tool}}>
+<div class={`tool ${tool.positionIndex === currentTool.positionIndex ? 'selected' : ''}`} role="button" tabindex="0" onclick={selectTool}>
 	{#if tool.positionIndex === currentTool.positionIndex && tool.type === StrokeToolType.PEN}
 		<div  class="tool-popover" role="button" tabindex="0" onclick={() => {popoverOpen = !popoverOpen}}>
 			<ArrowSVG color="#000000" width="15px" height="15px"></ArrowSVG>

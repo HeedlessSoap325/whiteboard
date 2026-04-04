@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { StrokeTool } from "$lib/types";
+import { Mode, type StrokeTool } from "$lib/types";
 
 function createToolsStore() {
 	const key = "tools";
@@ -24,3 +24,4 @@ function createToolsStore() {
 }
 
 export const toolsStore = createToolsStore();
+export const modeStore 	= writable<Mode>(Mode.MOUSE);

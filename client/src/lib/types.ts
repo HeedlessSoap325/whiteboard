@@ -22,3 +22,8 @@ export interface StrokeTool {
 	type: StrokeToolType,
 	positionIndex: number,
 }
+
+export enum Mode {
+	DRAWING,
+	MOUSE
+}

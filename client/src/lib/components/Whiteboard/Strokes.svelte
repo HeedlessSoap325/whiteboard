@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { StrokeToolType, type Stroke, type StrokePoint, type StrokeTool } from "$lib/types";
+	import { Mode, StrokeToolType, type Stroke, type StrokePoint, type StrokeTool } from "$lib/types";
     import { getStrokes } from "$lib/sync/provider";
 	import { onMount } from "svelte";
     import { strokesStore } from "$lib/stores/whiteboard";
     import Toolbar from "./Toolbar.svelte";
+    import { modeStore } from "$lib/stores/tool";
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D | null = null;
@@ -28,13 +29,22 @@
 
 		ctx = canvas.getContext("2d");
 
-		canvas.addEventListener('pointerdown', startDraw);
-		canvas.addEventListener('pointermove', draw);
-		canvas.addEventListener('pointerup', endDraw);
-		canvas.addEventListener('pointerleave', endDraw);
-
 		getStrokes().observe(redrawCanvas);
 	});
+
+	$effect(() => {
+		if ($modeStore === Mode.DRAWING) {
+			canvas.addEventListener('pointerdown', startDraw);
+			canvas.addEventListener('pointermove', draw);
+			canvas.addEventListener('pointerup', endDraw);
+			canvas.addEventListener('pointerleave', endDraw);
+		} else {
+			canvas.removeEventListener('pointerdown', startDraw);
+			canvas.removeEventListener('pointermove', draw);
+			canvas.removeEventListener('pointerup', endDraw);
+			canvas.removeEventListener('pointerleave', endDraw);
+		}
+	})
 
 	function startDraw(e: PointerEvent) {
 		e.preventDefault();
