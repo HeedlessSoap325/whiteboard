@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
     import { getPresence } from "$lib/sync/provider";
     import CanvasLayer from "$lib/components/layers/Canvas.svelte";
+    import TextLayer from "$lib/components/layers/Text.svelte";
 
     let states = $state<any[]>([]);
 
@@ -22,3 +23,4 @@
 </script>
 
 <CanvasLayer></CanvasLayer>
+<TextLayer></TextLayer>

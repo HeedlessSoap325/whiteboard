@@ -1,24 +1,24 @@
 import { writable } from "svelte/store";
 import { browser } from '$app/environment';
 import { getNotes, getStrokes } from "$lib/sync/provider";
-import type { Stroke } from "$lib/types";
+import type { Note, Stroke } from "$lib/types";
 
 export function createNotesStore() {
     if (!browser) {
-        return writable(new Map());
+        return writable(new Array<Note>());
     }
 
-    const ymap = getNotes();
-    const { subscribe, set } = writable<Map<string, unknown>>(
-        new Map(ymap.entries())
+    const yarray = getNotes();
+    const { subscribe, set } = writable<Array<Note>>(
+        yarray.toArray() as Note[]
     );
-    ymap.observe(() => set(new Map(ymap.entries())));
+    yarray.observe(() => set(yarray.toArray() as Note[]));
     return { subscribe };
 }
 
 export function createStrokesStore() {
     if (!browser) {
-        return writable(new Map());
+        return writable(new Array<Stroke>());
     }
 
     const yarray = getStrokes();

@@ -29,5 +29,5 @@ function getProvider(): { doc: Y.Doc; provider: WebsocketProvider } {
 // Lazy exports — only evaluated in the browser
 export const getDoc         = () => getProvider().doc;
 export const getPresence    = () => getProvider().provider.awareness;
-export const getNotes       = () => getProvider().doc.getMap("notes");
+export const getNotes       = () => getProvider().doc.getArray("notes");
 export const getStrokes     = () => getProvider().doc.getArray("strokes");

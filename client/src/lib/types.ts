@@ -27,3 +27,10 @@ export enum Mode {
 	DRAWING,
 	MOUSE
 }
+
+export interface Note {
+	id: string,
+	x: number,
+	y: number,
+	content: string,
+}
