@@ -118,7 +118,7 @@
 				style="transform: translate({text.x}px, {text.y}px)"
 			>{text.content}</textarea>
 		{:else}
-			<div role="cell" tabindex="0" onmousedown={(e) => onMouseDown(e, text.id)} class="text-item" style="transform: translate({text.x}px, {text.y}px)">
+			<div class:movable={$modeStore === Mode.MOUSE} role="cell" tabindex="0" onmousedown={(e) => onMouseDown(e, text.id)} class="text-item" style="transform: translate({text.x}px, {text.y}px)">
 				{text.content}
 			</div>
 		{/if}	
@@ -138,10 +138,15 @@
 
 	.text-item {
         position: absolute;
+        cursor: none;
+    }
+
+	.text-item.movable {
+        position: absolute;
         cursor: move;
     }
 
-	.text-item:hover {
+	.text-item.movable:hover {
 		outline: 1px dashed #888;
 	}
 </style>
