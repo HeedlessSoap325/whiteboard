@@ -10,18 +10,18 @@
 
 	$effect(() => {
 		if ($modeStore === Mode.MOUSE) {
-			window.addEventListener("pointerdown", handlePointerDown);
+			window.addEventListener("mousedown", handleMouseDown);
 			window.addEventListener("mousemove", onMouseMove);
 			window.addEventListener("mouseup", onMouseUp);
 		} else {
 			editingId = "";
-			window.removeEventListener("pointerdown", handlePointerDown);
+			window.removeEventListener("mousedown", handleMouseDown);
 			window.removeEventListener("mousemove", onMouseMove);
 			window.removeEventListener("mouseup", onMouseUp);
 		}
 	})
 
-	function handlePointerDown(e: PointerEvent) {
+	function handleMouseDown(e: MouseEvent) {
 		const now = Date.now();
 		const isDoubleClick = now - lastClick < 300;
 		lastClick = now;
@@ -81,7 +81,8 @@
 
 	function onMouseDown(e: MouseEvent, id: string) {
 		e.preventDefault(); // Prevent text from getting highlighted
-
+		if ($modeStore !== Mode.MOUSE) return;
+		
 		editingId = id;
 		dragging = {
 			id,
