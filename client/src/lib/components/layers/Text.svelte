@@ -60,6 +60,25 @@
 		}
 	}
 
+	function deleteNote(id: string) {
+		const yarray = getNotes();
+		const index = yarray.toArray().findIndex((n: any) => n.id == id);
+
+		if (index !== -1) {
+			yarray.delete(index, 1);
+		}
+	}
+
+	function finishNoteUpdate(id: string, newContent: string) {
+		if (newContent.trim() === "") {
+			deleteNote(id);
+		} else {
+			updateNote(editingId, () => ({content: newContent}));
+		}
+		
+		editingId = "";
+	}
+
 	function onMouseDown(e: MouseEvent, id: string) {
 		e.preventDefault(); // Prevent text from getting highlighted
 
@@ -93,10 +112,9 @@
     {#each $notesStore as text (text.id)}
 		{#if editingId === text.id}
 			<textarea
-				onblur={() => {editingId = "";}}
+				onblur={(e) => {finishNoteUpdate(text.id, e.target!.value)}}
 				onpointerdown={(e) => {e.stopPropagation();}}
 				style="transform: translate({text.x}px, {text.y}px)"
-				oninput={(e) => updateNote(text.id, () => ({content: e.target!.value}))}
 			>{text.content}</textarea>
 		{:else}
 			<div role="cell" tabindex="0" onmousedown={(e) => onMouseDown(e, text.id)} class="text-item" style="transform: translate({text.x}px, {text.y}px)">
