@@ -60,16 +60,17 @@
 		console.log($notesStore)
 	}
 
-	function updateNote(content: string) {
+	function updateNote(id: string, updater: (note: Note) => Partial<Note>) {
 		const yarray = getNotes();
-		const index = yarray.toArray().findIndex((n: any) => n.id == editingId);
+		const index = yarray.toArray().findIndex((n: any) => n.id == id);
 
 		if (index !== -1) {
 			const note = yarray.get(index) as Note;
-			note.content = content;
+			const notePart = updater(note);
+			const newNote = { ...note, ...notePart }
 
 			yarray.delete(index, 1);
-			yarray.insert(index, [note]);
+			yarray.insert(index, [newNote]);
 		}
 	}
 
@@ -108,7 +109,7 @@
 			<textarea 
 				bind:this={editTextarea}
 				style="transform: translate({text.x}px, {text.y}px)"
-				oninput={(e) => updateNote(e.target!.value)}
+				oninput={(e) => updateNote(text.id, () => ({content: e.target!.value}))}
 			>{text.content}</textarea>
 		{:else}
 			<div role="cell" tabindex="0" onmousedown={(e) => onMouseDown(e, text.id)} class="text-item" style="transform: translate({text.x}px, {text.y}px)">
