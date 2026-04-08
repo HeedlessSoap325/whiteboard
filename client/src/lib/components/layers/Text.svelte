@@ -6,7 +6,6 @@
 
 	let lastClick = $state(0);
 	let editingId = $state("");
-	let editTextarea: HTMLTextAreaElement | null = $state(null);
 	let dragging: Note | null = $state(null);
 
 	$effect(() => {
@@ -16,25 +15,11 @@
 			window.addEventListener("mouseup", onMouseUp);
 		} else {
 			editingId = "";
-			editTextarea?.remove();
 			window.removeEventListener("pointerdown", handlePointerDown);
 			window.removeEventListener("mousemove", onMouseMove);
 			window.removeEventListener("mouseup", onMouseUp);
 		}
 	})
-
-	
-	$effect(() => {
-		if (!editTextarea) return;
-		editTextarea.focus();
-		
-		editTextarea.addEventListener("focus", () => {
-			editTextarea?.addEventListener("blur", () => {
-				editingId = "";
-			});
-		});
-	})
-
 
 	function handlePointerDown(e: PointerEvent) {
 		const now = Date.now();
@@ -48,7 +33,6 @@
 
 	function createTextAt(x: number, y: number) {
 		const textId = crypto.randomUUID();
-		editingId = textId;
 
 		const note = {
 			id: textId,
@@ -56,6 +40,8 @@
 			content: "",
 		}
 		getNotes().push([note]);
+
+		editingId = textId;
 
 		console.log($notesStore)
 	}
@@ -104,10 +90,11 @@
 </script>
 
 <div id="text-layer">
-    {#each $notesStore as text}
+    {#each $notesStore as text (text.id)}
 		{#if editingId === text.id}
-			<textarea 
-				bind:this={editTextarea}
+			<textarea
+				onblur={() => {editingId = "";}}
+				onpointerdown={(e) => {e.stopPropagation();}}
 				style="transform: translate({text.x}px, {text.y}px)"
 				oninput={(e) => updateNote(text.id, () => ({content: e.target!.value}))}
 			>{text.content}</textarea>
