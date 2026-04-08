@@ -7,14 +7,19 @@
 	let lastClick = $state(0);
 	let editingId = $state("");
 	let editTextarea: HTMLTextAreaElement | null = $state(null);
+	let dragging: Note | null = $state(null);
 
 	$effect(() => {
 		if ($modeStore === Mode.MOUSE) {
 			window.addEventListener("pointerdown", handlePointerDown);
+			window.addEventListener("mousemove", onMouseMove);
+			window.addEventListener("mouseup", onMouseUp);
 		} else {
 			editingId = "";
 			editTextarea?.remove();
 			window.removeEventListener("pointerdown", handlePointerDown);
+			window.removeEventListener("mousemove", onMouseMove);
+			window.removeEventListener("mouseup", onMouseUp);
 		}
 	})
 
@@ -67,6 +72,34 @@
 			yarray.insert(index, [note]);
 		}
 	}
+
+	function onMouseDown(e: MouseEvent, id: string) {
+		e.preventDefault(); // Prevent text from getting highlighted
+
+		editingId = id;
+		dragging = {
+			id,
+			x: e.clientX,
+			y: e.clientY,
+			content: "",
+		};
+	}
+
+	function onMouseMove(e: MouseEvent) {
+		if (!dragging) return;
+
+		updateNote(dragging.id, (note) => ({
+			x: note.x + e.clientX - dragging.x,
+			y: note.y += e.clientY - dragging.y,
+		}));
+
+		dragging.x = e.clientX;
+		dragging.y = e.clientY;
+	}
+
+	function onMouseUp() {
+		dragging = null;
+	}
 </script>
 
 <div id="text-layer">
@@ -78,7 +111,7 @@
 				oninput={(e) => updateNote(e.target!.value)}
 			>{text.content}</textarea>
 		{:else}
-			<div class="text-item" style="transform: translate({text.x}px, {text.y}px)">
+			<div role="cell" tabindex="0" onmousedown={(e) => onMouseDown(e, text.id)} class="text-item" style="transform: translate({text.x}px, {text.y}px)">
 				{text.content}
 			</div>
 		{/if}	
