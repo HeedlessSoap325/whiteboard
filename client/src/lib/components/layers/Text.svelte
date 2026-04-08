@@ -96,7 +96,7 @@
 
 		updateNote(dragging.id, (note) => ({
 			x: note.x + e.clientX - dragging.x,
-			y: note.y += e.clientY - dragging.y,
+			y: note.y + e.clientY - dragging.y,
 		}));
 
 		dragging.x = e.clientX;
@@ -109,7 +109,7 @@
 </script>
 
 <div id="text-layer">
-    {#each $notesStore as text (text.id)}
+    {#each $notesStore as text}
 		{#if editingId === text.id}
 			<textarea
 				onblur={(e) => {finishNoteUpdate(text.id, e.target!.value)}}
@@ -130,10 +130,15 @@
 		height: 100vh;
 	}
 
+	.text-item, textarea {
+        position: absolute;
+        cursor: text;
+    }
+
 	.text-item {
-		position: absolute;
-		cursor: move;
-	}
+        position: absolute;
+        cursor: move;
+    }
 
 	.text-item:hover {
 		outline: 1px dashed #888;
