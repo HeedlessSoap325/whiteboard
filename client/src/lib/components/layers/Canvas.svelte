@@ -5,6 +5,7 @@
     import { strokesStore } from "$lib/stores/whiteboard";
     import Toolbar from "$lib/components/Canvas/Toolbar.svelte";
     import { modeStore } from "$lib/stores/tool";
+	import {v4 as uuidv4} from "uuid";
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D | null = null;
@@ -53,7 +54,7 @@
 			isDrawing = true;
 
 			currentStroke = {
-				id: crypto.randomUUID(),
+				id: uuidv4(),
 				color: currentTool.color,
 				width: currentTool.width,
 				points: []

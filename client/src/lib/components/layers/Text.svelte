@@ -3,6 +3,7 @@
     import { notesStore } from "$lib/stores/whiteboard";
     import { getNotes } from "$lib/sync/provider";
     import { Mode, type Note } from "$lib/types";
+	import {v4 as uuidv4} from "uuid";
 
 	let lastClick = $state(0);
 	let editingId = $state("");
@@ -32,7 +33,7 @@
 	}
 
 	function createTextAt(x: number, y: number) {
-		const textId = crypto.randomUUID();
+		const textId = uuidv4();
 
 		const note = {
 			id: textId,
