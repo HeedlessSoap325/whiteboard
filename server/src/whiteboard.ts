@@ -6,8 +6,14 @@ import * as awarenessProtocol from "y-protocols/awareness";
 import * as encoding from "lib0/encoding";
 import * as decoding from "lib0/decoding";
 import * as fs from "fs";
-import * as path from "path";
 import * as yws from "y-websocket";
+import express from "express";
+import rateLimit from "express-rate-limit";
+import cookieSession from "cookie-session";
+import { checkSchema, validationResult } from "express-validator";
+import { loadDoc, saveDoc } from "./utils.ts";
+import { login, loginSchema, logout, register, registerSchema } from "./controllers/auth.ts";
+
 configDotenv({path: process.argv[2] || ".env"});
 
 interface RoomState {
@@ -17,40 +23,56 @@ interface RoomState {
 }
 
 const PERSIST_DIR = process.env.PERSIST_DIR || "./room-states";
-
-const wss = new WebSocketServer({ port: Number(process.env.PUBLIC_SERVER_PORT) || 1999 });
-const rooms = new Map<string, RoomState>();
+const SERVER_PORT = Number(process.env.PUBLIC_SERVER_PORT) || 1999;
 
 fs.mkdirSync(PERSIST_DIR, { recursive: true });
 
-function roomFilePath(roomId: string) {
-	// Sanitise roomId so it's safe as a filename
-	const safe = roomId.replace(/[^a-zA-Z0-9_-]/g, "_");
-	return path.join(PERSIST_DIR, `${safe}.bin`);
-}
+const app = express();
+const server = app.listen(SERVER_PORT, () => console.log(`Server listening on port ${SERVER_PORT}`))
+const wss = new WebSocketServer({ server: server });
+const rooms = new Map<string, RoomState>();
 
-function loadDoc(roomId: string): Y.Doc {
-	const doc = new Y.Doc();
-	const filePath = roomFilePath(roomId);
-	if (fs.existsSync(filePath)) {
-		const state = fs.readFileSync(filePath);
-		Y.applyUpdate(doc, state);
-		console.log(`[${roomId}] Loaded persisted state (${state.length} bytes)`);
+const ratelimitMinutes = 10;
+const limiter = rateLimit({
+	windowMs: ratelimitMinutes * 60 * 1000,
+	max: 25,
+	message: `Too many requests from this IP, please try again after ${ratelimitMinutes} minutes`,
+});
+app.use(limiter);
+
+const cookies = cookieSession({
+	name: "whiteboard-session",
+	secret: process.env.COOKIE_SECRET || "poadieugfeiusqgjd9e8d'w8d6'9we6eurt287trt82t82te08q7gjjjge8tf2e961",
+	maxAge: 24 * 60 * 60 * 1000 // 24 hours
+});
+app.use(cookies);
+
+const validate = (req: any, res: any, next: any) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	} else {
+		next();
 	}
-	return doc;
-}
-  
-function saveDoc(roomId: string, doc: Y.Doc) {
-	const state = Y.encodeStateAsUpdate(doc);
-	fs.writeFileSync(roomFilePath(roomId), state);
-	console.log(`[${roomId}] Persisted state (${state.length} bytes)`);
-}
+};
+
+app.use(express.json())
+
+app.post("/auth/register", checkSchema(registerSchema), validate, register);
+app.post("/auth/login", checkSchema(loginSchema), validate, login);
+app.delete("/auth/logout", logout);
+
+/*
+app.post("/room/", createRoom);
+app.get("/room/", getRooms);
+app.delete("/room/", deleteRoom);
+*/
 
 wss.on("connection", (socket: WebSocket, req) => {
 	const roomId = new URL(req.url!, `http://${process.env.PUBLIC_SERVER_BASE || "localhost"}`).searchParams.get("room") ?? "default";
 
 	if (!rooms.has(roomId)) {
-		const doc = loadDoc(roomId);
+		const doc = loadDoc(roomId, PERSIST_DIR);
 		const awareness = new awarenessProtocol.Awareness(doc);
 		rooms.set(roomId, { clients: new Set(), doc, awareness });
 	}
@@ -117,12 +139,10 @@ wss.on("connection", (socket: WebSocket, req) => {
 		console.log(`[${roomId}] Client disconnected (${room.clients.size} remaining)`);
 	  
 		if (room.clients.size === 0) {
-			saveDoc(roomId, room.doc);
+			saveDoc(roomId, room.doc, PERSIST_DIR);
 			room.doc.destroy();
 			rooms.delete(roomId);
 			console.log(`[${roomId}] Room closed and evicted`);
 		}
 	});
 });
-
-console.log(`WS server running on ws://${process.env.PUBLIC_SERVER_BASE || "localhost"}:${process.env.PUBLIC_SERVER_PORT || 1999}`);
