@@ -26,6 +26,7 @@ const PERSIST_DIR = process.env.PERSIST_DIR || "./room-states";
 const SERVER_PORT = Number(process.env.PUBLIC_SERVER_PORT) || 1999;
 
 fs.mkdirSync(PERSIST_DIR, { recursive: true });
+setupDB();
 
 const app = express();
 const server = app.listen(SERVER_PORT, () => console.log(`Server listening on port ${SERVER_PORT}`))
