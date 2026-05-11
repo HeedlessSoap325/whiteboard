@@ -47,6 +47,7 @@ app.use(limiter);
 
 const cookies = cookieSession({
 	name: "whiteboard-session",
+	sameSite: "lax",
 	secret: process.env.COOKIE_SECRET || "poadieugfeiusqgjd9e8d'w8d6'9we6eurt287trt82t82te08q7gjjjge8tf2e961",
 	maxAge: 24 * 60 * 60 * 1000 // 24 hours
 });
@@ -88,6 +89,8 @@ function checkRoomAccess(username: string, roomId: string): boolean {
 	if (!db) return false;
 
 	const room = db.data.rooms.find((r: Room) => r.name === roomId);
+	if (!room) return false;
+	
 	return room.allowedParticipants.includes(username);
 }
   
