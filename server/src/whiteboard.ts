@@ -13,6 +13,8 @@ import cookieSession from "cookie-session";
 import { checkSchema, validationResult } from "express-validator";
 import { loadDoc, saveDoc } from "./utils.ts";
 import { login, loginSchema, logout, register, registerSchema } from "./controllers/auth.ts";
+import { createRoom, deleteRoom, getRooms, roomSchema } from "./controllers/room.ts";
+import { setupDB } from "./db.ts";
 
 configDotenv({path: process.argv[2] || ".env"});
 
@@ -48,7 +50,7 @@ const cookies = cookieSession({
 });
 app.use(cookies);
 
-const validate = (req: any, res: any, next: any) => {
+const validateSchema = (req: any, res: any, next: any) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		return res.status(400).json({ errors: errors.array() });
@@ -57,17 +59,23 @@ const validate = (req: any, res: any, next: any) => {
 	}
 };
 
+const validateLogin = (req: any, res: any, next: any) => {
+	if (!req.session.user || !req.session.user.name) {
+		return res.status(401).send("You are not logged in yet. Please log in at /auth/login or register at /auth/register!");
+	} else {
+		next();
+	}
+}
+
 app.use(express.json())
 
-app.post("/auth/register", checkSchema(registerSchema), validate, register);
-app.post("/auth/login", checkSchema(loginSchema), validate, login);
-app.delete("/auth/logout", logout);
+app.post("/auth/register", checkSchema(registerSchema), validateSchema, register);
+app.post("/auth/login", checkSchema(loginSchema), validateSchema, login);
+app.delete("/auth/logout", validateLogin, logout);
 
-/*
-app.post("/room/", createRoom);
-app.get("/room/", getRooms);
-app.delete("/room/", deleteRoom);
-*/
+app.post("/room/", checkSchema(roomSchema), validateSchema, validateLogin, createRoom);
+app.get("/room/", validateLogin, getRooms);
+app.delete("/room/:name", validateLogin, deleteRoom);
 
 wss.on("connection", (socket: WebSocket, req) => {
 	const roomId = new URL(req.url!, `http://${process.env.PUBLIC_SERVER_BASE || "localhost"}`).searchParams.get("room") ?? "default";
