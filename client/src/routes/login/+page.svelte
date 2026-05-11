@@ -33,7 +33,6 @@
                 errorMessage = data ?? "Login failed";
                 return;
             } else {
-				errorMessage = "";
 				await goto("/");
 			}
 
@@ -44,6 +43,28 @@
             isLoading = false;
         }
     }
+
+	$effect(() => {
+		if (isLoading) {
+			let dotsNum = 0;
+
+			anim = setInterval(() => {
+				dotsNum = (dotsNum + 1) % 4;
+				dots = ".".repeat(dotsNum);
+			}, 300);
+		} else {
+			dots = "";
+
+			if (anim) {
+				clearInterval(anim);
+				anim = undefined;
+			}
+		}
+
+		return () => {
+			if (anim) clearInterval(anim);
+		};
+	});
 </script>
 
 <main id="main">
@@ -55,8 +76,8 @@
 		<input id="username" class="input" placeholder="Username" type="text" name="username" bind:value={username} use:validators={[required, minLength(1)]}/>
 		{#if !$form.username?.valid && $form.username?.touched}
 			<div class="hint">
-		<Hint for="username" on="required">This is a mandatory field</Hint>
-		<Hint for="username" on="minLength">This field must be at least 1 character long</Hint>
+				<Hint for="username" on="required">This is a mandatory field</Hint>
+				<Hint for="username" on="minLength">This field must be at least 1 character long</Hint>
 			</div>
 		{/if}
 		
@@ -64,8 +85,8 @@
 		<input id="password" class="input" placeholder="Pasword" type="password" name="password" bind:value={password} use:validators={[required, minLength(8)]}/>
 		{#if !$form.password?.valid && $form.password?.touched}
 			<div class="hint">
-		<Hint for="password" on="required">This is a mandatory field</Hint>
-		<Hint for="password" on="minLength">This field must be at least 8 character long</Hint>
+				<Hint for="password" on="required">This is a mandatory field</Hint>
+				<Hint for="password" on="minLength">This field must be at least 8 character long</Hint>
 			</div>
 		{/if}
 
