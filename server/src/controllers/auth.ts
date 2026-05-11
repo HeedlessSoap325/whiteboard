@@ -1,11 +1,6 @@
 import { matchedData} from "express-validator";
-import { Low } from "lowdb";
-import { JSONFile } from "lowdb/node";
 import bcrypt from "bcryptjs";
-
-const DB_FILE = process.env.DB_FILE || "./db.json";
-const db = new Low<any>(new JSONFile(DB_FILE), { users: [] });
-await db.read();
+import { db } from "../db.ts";
 
 export const registerSchema = {
 	username: {
@@ -38,6 +33,7 @@ export const loginSchema = {
 }
 
 export async function register(req: any, res: any) {
+	if (!db) return req.sendStatus(500);
 	const data = matchedData(req);
 
 	const user = db.data.users.find((u: any) => u.username === data.username);
@@ -48,13 +44,14 @@ export async function register(req: any, res: any) {
 	await db.write();
 
 	req.session.user = {
-		uername: data.username,
+		name: data.username,
 	};
 
 	res.status(200).send(`Now logged in as ${data.username}`);
 }
 
 export async function login(req: any, res: any) {
+	if (!db) return req.sendStatus(500);
 	const data = matchedData(req);
 
 	const user = db.data.users.find((u: any) => u.username === data.username);
@@ -64,7 +61,7 @@ export async function login(req: any, res: any) {
 
 	if (result) {
 		req.session.user = {
-			uername: data.username,
+			name: data.username,
 		};
 
 		res.status(200).send(`Now logged in as ${data.username}`);
@@ -74,10 +71,6 @@ export async function login(req: any, res: any) {
 }
 
 export function logout(req: any, res: any) {
-	if (req.session.user) {
-		req.session.user = null;
-		res.status(200).send("logout");
-	} else {
-		res.status(400).send("You are not logged in yet. Please log in at /auth/login or register at /auth/register!");
-	}
+	req.session.user = null;
+	res.status(200).send("logout");
 }
