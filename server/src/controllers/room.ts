@@ -1,7 +1,7 @@
 import { matchedData} from "express-validator";
 import { db } from "../db.ts";
 
-interface Room {
+export interface Room {
 	name: string,
 	owner: string,
 	allowedParticipants: String[],

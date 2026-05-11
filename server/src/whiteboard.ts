@@ -13,8 +13,10 @@ import cookieSession from "cookie-session";
 import { checkSchema, validationResult } from "express-validator";
 import { loadDoc, saveDoc } from "./utils.ts";
 import { login, loginSchema, logout, register, registerSchema } from "./controllers/auth.ts";
-import { createRoom, deleteRoom, getRooms, roomSchema } from "./controllers/room.ts";
-import { setupDB } from "./db.ts";
+import { createRoom, deleteRoom, getRooms, Room, roomSchema } from "./controllers/room.ts";
+import { db, setupDB } from "./db.ts";
+import { promisify } from "util";
+import { zstdCompress } from "zlib";
 
 configDotenv({path: process.argv[2] || ".env"});
 
@@ -32,7 +34,7 @@ setupDB();
 
 const app = express();
 const server = app.listen(SERVER_PORT, () => console.log(`Server listening on port ${SERVER_PORT}`))
-const wss = new WebSocketServer({ server: server });
+const wss = new WebSocketServer({ noServer: true });
 const rooms = new Map<string, RoomState>();
 
 const ratelimitMinutes = 10;
@@ -76,6 +78,48 @@ app.delete("/auth/logout", validateLogin, logout);
 app.post("/room/", checkSchema(roomSchema), validateSchema, validateLogin, createRoom);
 app.get("/room/", validateLogin, getRooms);
 app.delete("/room/:name", validateLogin, deleteRoom);
+
+function checkRoomAccess(username: string, roomId: string): boolean {
+	if (!db) return false;
+
+	const room = db.data.rooms.find((r: Room) => r.name === roomId);
+	return room.allowedParticipants.includes(username);
+}
+  
+const runCookies = promisify(
+	(req: any, res: any, next: (err?: any) => void) => cookies(req, res, next)
+);
+
+
+server.on("upgrade", async (req: any, socket, head) => {
+	try {
+		// Run cookie-session so req.session is populated
+		await runCookies(req, {} as any);
+
+		if (!req.session?.user) {
+			socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+			socket.destroy();
+			return;
+		}
+
+		const roomId = new URL(req.url!, `http://${process.env.PUBLIC_SERVER_BASE || "localhost"}`).searchParams.get("room") ?? "default";
+
+		const hasAccess = checkRoomAccess(req.session.user.name, roomId);
+		if (!hasAccess) {
+			socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+			socket.destroy();
+			return;
+		}
+
+		wss.handleUpgrade(req, socket, head, (ws) => {
+			wss.emit("connection", ws, req);
+		});
+	} catch (err) {
+		console.error("WebSocket upgrade error:", err);
+		socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+		socket.destroy();
+	}
+});
 
 wss.on("connection", (socket: WebSocket, req) => {
 	const roomId = new URL(req.url!, `http://${process.env.PUBLIC_SERVER_BASE || "localhost"}`).searchParams.get("room") ?? "default";
