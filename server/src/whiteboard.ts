@@ -13,10 +13,10 @@ import cookieSession from "cookie-session";
 import { checkSchema, validationResult } from "express-validator";
 import { loadDoc, saveDoc } from "./utils.ts";
 import { login, loginSchema, logout, register, registerSchema } from "./controllers/auth.ts";
-import { createRoom, deleteRoom, getRooms, Room, roomSchema } from "./controllers/room.ts";
+import { createRoom, deleteRoom, getRooms, type Room, roomSchema } from "./controllers/room.ts";
 import { db, setupDB } from "./db.ts";
 import { promisify } from "util";
-import { zstdCompress } from "zlib";
+import cors from "cors";
 
 configDotenv({path: process.argv[2] || ".env"});
 
@@ -51,6 +51,11 @@ const cookies = cookieSession({
 	maxAge: 24 * 60 * 60 * 1000 // 24 hours
 });
 app.use(cookies);
+
+app.use(cors({
+	origin: `http://${process.env.PUBLIC_SERVER_BASE}:5173`,
+	credentials: true,
+}));
 
 const validateSchema = (req: any, res: any, next: any) => {
 	const errors = validationResult(req);
