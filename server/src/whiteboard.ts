@@ -98,6 +98,9 @@ const runCookies = promisify(
 	(req: any, res: any, next: (err?: any) => void) => cookies(req, res, next)
 );
 
+function parseRoomId(req: any) {
+	return new URL(req.url!, `http://${process.env.PUBLIC_SERVER_BASE || "localhost"}`).pathname.replace("/", "") ?? "default";
+}
 
 server.on("upgrade", async (req: any, socket, head) => {
 	try {
@@ -110,8 +113,7 @@ server.on("upgrade", async (req: any, socket, head) => {
 			return;
 		}
 
-		const roomId = new URL(req.url!, `http://${process.env.PUBLIC_SERVER_BASE || "localhost"}`).searchParams.get("room") ?? "default";
-
+		const roomId = parseRoomId(req);
 		const hasAccess = checkRoomAccess(req.session.user.name, roomId);
 		if (!hasAccess) {
 			socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
@@ -130,7 +132,7 @@ server.on("upgrade", async (req: any, socket, head) => {
 });
 
 wss.on("connection", (socket: WebSocket, req) => {
-	const roomId = new URL(req.url!, `http://${process.env.PUBLIC_SERVER_BASE || "localhost"}`).searchParams.get("room") ?? "default";
+	const roomId = parseRoomId(req);
 
 	if (!rooms.has(roomId)) {
 		const doc = loadDoc(roomId, PERSIST_DIR);
