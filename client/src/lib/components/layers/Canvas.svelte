@@ -30,7 +30,13 @@
 
 		ctx = canvas.getContext("2d");
 
-		getStrokes().observe(redrawCanvas);
+		const unsubscribe = strokesStore.subscribe((strokes) => {
+			redrawCanvas(strokes);
+		});
+
+		return () => {
+			unsubscribe();
+		};
 	});
 
 	$effect(() => {
@@ -166,13 +172,13 @@
 		ctx.stroke()
 	}
 
-	function redrawCanvas() {
+	function redrawCanvas(strokes: Stroke[]) {
 		if (!ctx) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-		$strokesStore.entries().forEach((s) => {
+		console.log("re-drawing", $strokesStore.entries().toArray().length)
+		strokes.forEach((stroke) => {
 			if (!ctx) return;
-			let stroke = s[1] as unknown as Stroke;
 			drawStroke(ctx, stroke);
 		})
 	}
