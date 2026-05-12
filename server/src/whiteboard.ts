@@ -108,16 +108,14 @@ server.on("upgrade", async (req: any, socket, head) => {
 		await runCookies(req, {} as any);
 
 		if (!req.session?.user) {
-			socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
-			socket.destroy();
+			socket.end("HTTP/1.1 401 Unauthorized\r\n\r\n");
 			return;
 		}
 
 		const roomId = parseRoomId(req);
 		const hasAccess = checkRoomAccess(req.session.user.name, roomId);
-		if (!hasAccess) {
-			socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
-			socket.destroy();
+			if (!hasAccess) {
+			socket.end("HTTP/1.1 403 Forbidden\r\n\r\n");
 			return;
 		}
 
