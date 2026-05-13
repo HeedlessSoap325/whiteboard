@@ -69,7 +69,7 @@ const validateSchema = (req: any, res: any, next: any) => {
 
 const validateLogin = (req: any, res: any, next: any) => {
 	if (!req.session.user || !req.session.user.name) {
-		return res.status(401).send("You are not logged in yet. Please log in at /auth/login or register at /auth/register!");
+		return res.status(401).json(errorify("You are not logged in yet. Please log in at /auth/login or register at /auth/register!"));
 	} else {
 		next();
 	}
@@ -101,6 +101,10 @@ export function getRoomActiveUsers(roomId: string) {
 	} else {
 		return 0;
 	}
+}
+
+export function errorify(error: string) {
+	return { errors: [ { msg: error } ] };
 }
   
 const runCookies = promisify(

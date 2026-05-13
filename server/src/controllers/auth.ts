@@ -1,6 +1,7 @@
 import { matchedData} from "express-validator";
 import bcrypt from "bcryptjs";
 import { db } from "../db.ts";
+import { errorify } from "../whiteboard.ts";
 
 export const registerSchema = {
 	username: {
@@ -37,7 +38,7 @@ export async function register(req: any, res: any) {
 	const data = matchedData(req);
 
 	const user = db.data.users.find((u: any) => u.username === data.username);
-	if (user) return res.status(400).send(`User '${data.username}' already exists!`);
+	if (user) return res.status(400).json(errorify(`User '${data.username}' already exists!`));
 
 	const hash = await bcrypt.hash(data.password, 10)
 	db.data.users.push({ username: data.username, password: hash })
@@ -47,7 +48,7 @@ export async function register(req: any, res: any) {
 		name: data.username,
 	};
 
-	res.status(200).send(`Now logged in as ${data.username}`);
+	return res.status(200).json( {msg: `Now logged in as ${data.username}`} );
 }
 
 export async function login(req: any, res: any) {
@@ -55,7 +56,7 @@ export async function login(req: any, res: any) {
 	const data = matchedData(req);
 
 	const user = db.data.users.find((u: any) => u.username === data.username);
-	if (!user) return res.status(400).send(`No such User '${data.username}'`);
+	if (!user) return res.status(400).json(errorify(`No such User '${data.username}'`));
 	
 	const result = await bcrypt.compare(data.password, user.password);
 
@@ -64,13 +65,13 @@ export async function login(req: any, res: any) {
 			name: data.username,
 		};
 
-		res.status(200).send(`Now logged in as ${data.username}`);
+		return res.status(200).json( {msg: `Now logged in as ${data.username}`} );
 	}else {
-		res.status(400).send("Username and password don't match!");
+		return res.status(400).json(errorify("Username and password don't match!"));
 	}
 }
 
 export function logout(req: any, res: any) {
 	req.session.user = null;
-	res.status(200).send("logout");
+	return res.status(200).json( {msg: "logout"} );
 }

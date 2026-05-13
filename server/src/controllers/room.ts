@@ -1,6 +1,6 @@
 import { matchedData} from "express-validator";
 import { db } from "../db.ts";
-import { getRoomActiveUsers } from "../whiteboard.ts";
+import { errorify, getRoomActiveUsers } from "../whiteboard.ts";
 
 export interface Room {
 	name: string,
@@ -39,7 +39,7 @@ export async function createRoom(req: any, res: any) {
 	const data = matchedData(req);
 
 	const existingRoom: Room | null = db.data.rooms.find((r: Room) => r.name === data.name);
-	if (existingRoom) return res.status(404).send(`Room '${data.name}' already exists!`);
+	if (existingRoom) return res.status(404).json(errorify(`Room '${data.name}' already exists!`));
 
 	const allowedParticipants: String[] = data.allowedParticipants;
 	allowedParticipants.push(req.session.user.name);
@@ -55,7 +55,7 @@ export async function createRoom(req: any, res: any) {
 
 	db.data.rooms.push(room);
 	await db.write();
-	res.status(200).send(`Room '${data.name}' was created successfully.`);
+	return res.status(200).json({ msg: `Room '${data.name}' was created successfully.` });
 }
 
 export function getRooms(req: any, res: any) {
@@ -72,14 +72,14 @@ export async function deleteRoom(req: any, res: any) {
 	const roomName = req.params.name;
 
 	const room: Room = db.data.rooms.find((r: Room) => r.name === roomName);
-	if (!room) res.status(404).send(`Room '${roomName}' doesn't exist!`);
+	if (!room) return res.status(404).json(errorify(`Room '${roomName}' doesn't exist!`));
 
 	if(room.owner !== req.session.user.name) {
-		res.status(403).send("You are not the owner of this room!");
+		return res.status(403).json(errorify("You are not the owner of this room!"));
 	} else {
 		db.data.rooms = db.data.rooms.filter((r: Room) => r.name !== roomName);
 		await db.write();
 
-		res.status(200).send(`Deleted Room '${roomName}' successfully.`);
+		return res.status(200).json( {msg: `Deleted Room '${roomName}' successfully.`} );
 	}
 }
