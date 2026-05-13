@@ -34,3 +34,11 @@ export interface Note {
 	y: number,
 	content: string,
 }
+
+export interface Room {
+	name: string,
+	owner: string,
+	public: boolean,
+	allowedParticipants: String[],
+	numActiveUsers?: number,
+}
