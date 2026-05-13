@@ -1,10 +1,13 @@
 import { matchedData} from "express-validator";
 import { db } from "../db.ts";
+import { getRoomActiveUsers } from "../whiteboard.ts";
 
 export interface Room {
 	name: string,
 	owner: string,
+	public: boolean,
 	allowedParticipants: String[],
+	numActiveUsers?: number,
 }
 
 const MAX_ROOM_PARTICIPANTS = Number(process.env.MAX_ROOM_CAPACITY) || 100;
@@ -37,10 +40,13 @@ export async function createRoom(req: any, res: any) {
 	const allowedParticipants: String[] = data.allowedParticipants;
 	allowedParticipants.push(req.session.user.name);
 
+	const isPublic = allowedParticipants.includes("*");
+
 	const room: Room = {
 		owner: req.session.user.name,
 		name: data.name,
-		allowedParticipants,
+		allowedParticipants: !isPublic ? allowedParticipants : [],
+		public: isPublic,
 	}
 
 	db.data.rooms.push(room);
@@ -50,7 +56,10 @@ export async function createRoom(req: any, res: any) {
 
 export function getRooms(req: any, res: any) {
 	if (!db) return req.sendStatus(500);
-	const rooms = db.data.rooms.filter((r: Room) => r.allowedParticipants.includes(req.session.user.name));
+	const rooms = db.data.rooms.filter((r: Room) => r.allowedParticipants.includes(req.session.user.name) || r.public);
+	rooms.forEach((r: Room) => {
+		r.numActiveUsers = getRoomActiveUsers(r.name);
+	});
 	return res.status(200).json(rooms || []);
 }
 

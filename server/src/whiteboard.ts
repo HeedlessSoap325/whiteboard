@@ -91,7 +91,16 @@ function checkRoomAccess(username: string, roomId: string): boolean {
 	const room = db.data.rooms.find((r: Room) => r.name === roomId);
 	if (!room) return false;
 	
-	return room.allowedParticipants.includes(username);
+	return room.allowedParticipants.includes(username) || room.public;
+}
+
+export function getRoomActiveUsers(roomId: string) {
+	if (rooms.has(roomId)) {
+		const roomState = rooms.get(roomId);
+		return roomState?.clients.size || 0; //roomState can't be undefined
+	} else {
+		return 0;
+	}
 }
   
 const runCookies = promisify(
