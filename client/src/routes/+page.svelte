@@ -4,19 +4,43 @@
     import { onMount } from "svelte";
 
 	let rooms = $state<Room[]>([]);
+	let isLoading = $state(false);
+	let errorMessage = $state("");
 
-	onMount(async () => {
-		const response = await fetch(`http://${env.PUBLIC_SERVER_BASE}:${env.PUBLIC_SERVER_PORT}/room/`, {
-                method: "GET",
+	async function fetchRooms() {
+		isLoading = true;
+        errorMessage = "";
+
+		try {
+			const response = await fetch(`http://${env.PUBLIC_SERVER_BASE}:${env.PUBLIC_SERVER_PORT}/room/`, {
+				method: "GET",
 				credentials: "include",
-            });
+			});
 
-        const data = await response.json();
-		rooms = data;
-	});
+			const data = await response.json();
+
+			if (!response.ok) {
+				errorMessage = data ?? "Loading failed";
+                return;
+			}
+
+			rooms = data;
+		} catch (err) {
+			console.log(err)
+            errorMessage = "Network error, please try again.";
+        } finally {
+            isLoading = false;
+        }
+	}
+
+	onMount(fetchRooms);
 </script>
 
-<h1>List of Rooms (at least in the future)</h1>
+<button onclick={fetchRooms}>{isLoading ? "Loading..." : "Refresh"}</button>
+
+{#if errorMessage}
+	<p>{errorMessage}</p>
+{/if}
 
 {#each rooms as room (room.name)}
 	<h1>{room.name}</h1>
