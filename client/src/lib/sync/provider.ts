@@ -3,6 +3,7 @@ import { WebsocketProvider } from "y-websocket";
 import { env } from '$env/dynamic/public';
 import { browser } from '$app/environment';
 import { page } from "$app/state";
+import { goto } from "$app/navigation";
 
 const globalAny = globalThis as any;
 
@@ -42,9 +43,20 @@ function setRoom(roomId: string) {
         doc,
         { connect: false }
     );
-
+    
     provider.connect();
     globalAny.__yInstance = { doc, provider, roomId };
+
+    provider.on("connection-close", (ev, prov) => {
+        console.log(ev)
+        if(ev && ev.code === 1006) {
+            if(globalAny.__yInstance) {
+                globalAny.__yInstance.provider.destroy();
+                globalAny.__yInstance.doc.destroy();
+            }
+            goto("/");
+        }
+    });
 }
 
 // Lazy exports — only evaluated in the browser
