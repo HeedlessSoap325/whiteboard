@@ -16,6 +16,10 @@ export const roomSchema = {
 	name: {
 		isString: true,
 		notEmpty: true,
+		matches: {
+			options: /^[A-Za-z0-9_-]+$/,
+			errorMessage: "Room names can only include letters, numbers, '-' and '_'"
+		},
 		errorMessage: "Invalid room name"
 	},
 	allowedParticipants: {
