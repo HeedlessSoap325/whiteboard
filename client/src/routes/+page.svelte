@@ -1,5 +1,6 @@
 <script lang="ts">
     import { env } from "$env/dynamic/public";
+    import { getErrors } from "$lib/shared";
     import type { Room } from "$lib/types";
     import { onMount } from "svelte";
 
@@ -20,7 +21,7 @@
 			const data = await response.json();
 
 			if (!response.ok) {
-				errorMessage = data ?? "Loading failed";
+				errorMessage = getErrors(data) ?? "Loading failed";
                 return;
 			}
 
@@ -39,7 +40,7 @@
 <button onclick={fetchRooms}>{isLoading ? "Loading..." : "Refresh"}</button>
 
 {#if errorMessage}
-	<p>{errorMessage}</p>
+	<p>{@html errorMessage}</p>
 {/if}
 
 {#each rooms as room (room.name)}

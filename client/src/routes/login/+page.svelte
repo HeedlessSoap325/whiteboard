@@ -4,6 +4,7 @@
 	import { env } from '$env/dynamic/public';
 	import { useForm, validators, Hint, required, minLength } from "svelte-use-form";
     import { goto } from '$app/navigation';
+    import { getErrors } from '$lib/shared';
 
 	const form = useForm();
 	let username = $state("");
@@ -27,10 +28,10 @@
 				credentials: "include",
             });
 
-            const data = await response.text();
+            const data = await response.json();
 
             if (!response.ok) {
-                errorMessage = data ?? "Login failed";
+                errorMessage = getErrors(data) ?? "Login failed";
                 return;
             } else {
 				await goto("/");
@@ -91,7 +92,7 @@
 		{/if}
 
 		{#if errorMessage}
-        	<p id="error">{errorMessage}</p>
+        	<p id="error">{@html errorMessage}</p>
     	{/if}
 
 		<button id="button" disabled={!$form.valid || isLoading}>
