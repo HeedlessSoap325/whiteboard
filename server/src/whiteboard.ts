@@ -12,7 +12,7 @@ import rateLimit from "express-rate-limit";
 import cookieSession from "cookie-session";
 import { checkSchema, validationResult } from "express-validator";
 import { loadDoc, saveDoc } from "./utils.ts";
-import { login, loginSchema, logout, register, registerSchema } from "./controllers/auth.ts";
+import { login, loginSchema, logout, register, registerSchema, verify } from "./controllers/auth.ts";
 import { createRoom, deleteRoom, getRooms, type Room, roomSchema } from "./controllers/room.ts";
 import { db, setupDB } from "./db.ts";
 import { promisify } from "util";
@@ -79,6 +79,7 @@ app.use(express.json())
 
 app.post("/auth/register", checkSchema(registerSchema), validateSchema, register);
 app.post("/auth/login", checkSchema(loginSchema), validateSchema, login);
+app.get("/auth/verify", validateLogin, verify);
 app.delete("/auth/logout", validateLogin, logout);
 
 app.post("/room/", checkSchema(roomSchema), validateSchema, validateLogin, createRoom);

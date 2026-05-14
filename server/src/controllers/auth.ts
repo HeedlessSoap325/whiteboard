@@ -71,6 +71,10 @@ export async function login(req: any, res: any) {
 	}
 }
 
+export function verify(req: any, res: any) {
+	return res.status(200).json( {msg: req.session.user.name} )
+}
+
 export function logout(req: any, res: any) {
 	req.session.user = null;
 	return res.status(200).json( {msg: "logout"} );
