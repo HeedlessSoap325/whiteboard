@@ -1,5 +1,6 @@
 <script lang="ts">
     import { env } from "$env/dynamic/public";
+    import RoomCard from "$lib/components/rooms/RoomCard.svelte";
     import { getErrors } from "$lib/shared";
     import type { Room } from "$lib/types";
     import { onMount } from "svelte";
@@ -44,5 +45,5 @@
 {/if}
 
 {#each rooms as room (room.name)}
-	<h1>{room.name}</h1>
+	<RoomCard room={room}></RoomCard>
 {/each}
