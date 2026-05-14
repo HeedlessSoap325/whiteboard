@@ -3,11 +3,20 @@
     import { notesStore } from "$lib/stores/whiteboard";
     import { getNotes } from "$lib/sync/provider";
     import { Mode, type Note } from "$lib/types";
+    import { onMount } from "svelte";
 	import {v4 as uuidv4} from "uuid";
 
 	let lastClick = $state(0);
 	let editingId = $state("");
 	let dragging: Note | null = $state(null);
+
+	onMount(() => {
+		return () => {
+			window.removeEventListener("mousedown", handleMouseDown);
+			window.removeEventListener("mousemove", onMouseMove);
+			window.removeEventListener("mouseup", onMouseUp);
+		}
+	});
 
 	$effect(() => {
 		if ($modeStore === Mode.MOUSE) {

@@ -59,6 +59,13 @@ function setRoom(roomId: string) {
     });
 }
 
+export function destroyProvider() {
+    if(globalAny.__yInstance) {
+        globalAny.__yInstance.provider.destroy();
+        globalAny.__yInstance.doc.destroy();
+    }
+}
+
 // Lazy exports — only evaluated in the browser
 export const getDoc         = () => getProvider().doc;
 export const getPresence    = () => getProvider().provider.awareness;

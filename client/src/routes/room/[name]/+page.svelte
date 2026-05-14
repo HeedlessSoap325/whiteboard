@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
 	import { browser } from '$app/environment';
-    import { getPresence } from "$lib/sync/provider";
+    import { destroyProvider, getPresence } from "$lib/sync/provider";
     import CanvasLayer from "$lib/components/layers/Canvas.svelte";
     import TextLayer from "$lib/components/layers/Text.svelte";
     import { modeStore } from "$lib/stores/tool";
@@ -26,7 +26,15 @@
         };
 
         presence.on("change", handler);
-        return () => presence.off("change", handler);
+        
+        return () => {
+            window.removeEventListener("pointermove", handlePointerDeviceInteractionStart);
+            window.removeEventListener("pointerdown", handlePointerDeviceInteractionStart);
+            window.removeEventListener("pointerup",   handlePointerDeviceInteractionEnd);
+
+            presence.off("change", handler);
+            destroyProvider();
+        }
     });
 
     function handlePointerDeviceInteractionStart(e: PointerEvent) {
