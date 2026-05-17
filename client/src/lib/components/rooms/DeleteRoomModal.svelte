@@ -3,7 +3,7 @@
     import { getErrors } from "$lib/shared";
     import Icon from "@iconify/svelte";
 
-	let { dialog = $bindable(), room, onClose } = $props();
+	let { dialog = $bindable(), room, onClose, refreshRooms } = $props();
     let isLoading = $state(false);
     let errorMessage = $state("");
 
@@ -24,6 +24,7 @@
                 return;
             } else {
                 dialog?.close();
+				refreshRooms();
             }
         } catch (err) {
 			console.error(err);

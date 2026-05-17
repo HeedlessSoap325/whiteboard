@@ -61,9 +61,9 @@
 	{#each rooms as room (room.name)}
 		<RoomCard room={room} user={user!} onDeleteRequest={(r) => { roomToDelete = r; dialog!.showModal(); }}></RoomCard>
 	{/each}
-	<AddRoomCard></AddRoomCard>
+	<AddRoomCard refreshRooms={fetchRooms}></AddRoomCard>
 
-	<DeleteRoomModal bind:dialog room={roomToDelete} onClose={() => { dialog!.close(); roomToDelete = null; }}></DeleteRoomModal>
+	<DeleteRoomModal bind:dialog room={roomToDelete} onClose={() => { dialog!.close(); roomToDelete = null; }} refreshRooms={fetchRooms}></DeleteRoomModal>
 </div>
 
 <style>

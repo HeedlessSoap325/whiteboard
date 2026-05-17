@@ -2,6 +2,8 @@
     import Icon from "@iconify/svelte";
     import AddRoomModal from "./AddRoomModal.svelte";
 
+	const { refreshRooms } = $props();
+
 	let showModal = $state(false);
 </script>
 
@@ -11,7 +13,7 @@
 	</button>
 </div>
 
-<AddRoomModal bind:showModal></AddRoomModal>
+<AddRoomModal bind:showModal refreshRooms={refreshRooms}></AddRoomModal>
 
 <style>
 	.room-card {

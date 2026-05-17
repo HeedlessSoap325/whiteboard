@@ -4,7 +4,7 @@
     import Icon from "@iconify/svelte";
     import { Hint, minLength, pattern, required, useForm, validators } from "svelte-use-form";
 
-	let {showModal = $bindable()} = $props();
+	let {showModal = $bindable(), refreshRooms} = $props();
 
 	let dialog: HTMLDialogElement | undefined = $state();
 	let form = useForm();
@@ -61,6 +61,7 @@
                 return;
             } else {
                 dialog?.close();
+				refreshRooms();
             }
         } catch (err) {
 			console.error(err);
