@@ -32,7 +32,13 @@
 	}
 
 	$effect(() => {
-		if (showModal) dialog?.showModal();
+		if (showModal) {
+			dialog?.showModal();
+			name = "";
+			errorMessage = "";
+			allowedParticipants = [];
+			isPublic = false;
+		}
 	})
 
     async function handleSubmit(e: SubmitEvent) {
