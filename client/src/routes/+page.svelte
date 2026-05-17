@@ -6,6 +6,7 @@
     import { getSession, verifySession, type User } from "$lib/guards/user";
     import { getErrors } from "$lib/shared";
     import type { Room } from "$lib/types";
+    import Icon from "@iconify/svelte";
     import { onMount } from "svelte";
 
 	let rooms = $state<Room[]>([]);
@@ -51,7 +52,15 @@
 	});
 </script>
 
-<button onclick={fetchRooms}>{isLoading ? "Loading..." : "Refresh"}</button>
+<button id="refresh" onclick={fetchRooms}>
+	{#if isLoading}
+		<Icon icon="tabler:loader-2" class="spin" aria-hidden="true" />
+		Loading...
+	{:else}
+		<Icon icon="tabler:refresh" aria-hidden="true" />
+		Refresh
+	{/if}
+</button>
 
 {#if errorMessage}
 	<p>{@html errorMessage}</p>
@@ -67,6 +76,12 @@
 <DeleteRoomModal bind:dialog room={roomToDelete} onClose={() => { dialog!.close(); roomToDelete = null; }} refreshRooms={fetchRooms}></DeleteRoomModal>
 
 <style>
+	#refresh {
+		display: flex;
+		align-items: center;
+		gap: 2px;
+	}
+
 	#room-cards {
 		padding: 2em;
 		display: flex;

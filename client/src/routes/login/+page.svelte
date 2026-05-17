@@ -5,14 +5,13 @@
 	import { useForm, validators, Hint, required, minLength } from "svelte-use-form";
     import { goto } from '$app/navigation';
     import { getErrors } from '$lib/shared';
+    import Icon from '@iconify/svelte';
 
 	const form = useForm();
 	let username = $state("");
 	let password = $state("");
 	let errorMessage = $state("");
     let isLoading = $state(false);
-	let dots = $state("");
-	let anim: ReturnType<typeof setInterval> | undefined;
 
     async function handleSubmit(event: SubmitEvent) {
         event.preventDefault();
@@ -44,28 +43,6 @@
             isLoading = false;
         }
     }
-
-	$effect(() => {
-		if (isLoading) {
-			let dotsNum = 0;
-
-			anim = setInterval(() => {
-				dotsNum = (dotsNum + 1) % 4;
-				dots = ".".repeat(dotsNum);
-			}, 300);
-		} else {
-			dots = "";
-
-			if (anim) {
-				clearInterval(anim);
-				anim = undefined;
-			}
-		}
-
-		return () => {
-			if (anim) clearInterval(anim);
-		};
-	});
 </script>
 
 <main id="main">
@@ -96,7 +73,13 @@
     	{/if}
 
 		<button id="button" disabled={!$form.valid || isLoading}>
-			<span>{isLoading ? "Logging in" : "Login"}</span>{#if isLoading} <span class="dots">{dots}</span> {/if}
+			{#if isLoading}
+				<Icon icon="tabler:loader-2" class="spin" aria-hidden="true" />
+				Logging in...
+			{:else}
+				<Icon icon="tabler:login-2" aria-hidden="true" />
+				Login
+			{/if}
 		</button>
 		<span id="register">Don't have an Account yet? Register <a class="link" href={resolve("/register")}>here</a>!</span>
 	</form>
@@ -180,6 +163,9 @@
 		align-self: flex-end;
 		margin-bottom: 1rem;
 		transition: transform 0.2s ease;
+		display: flex;
+		align-items: center;
+		gap: 2px;
 	}
 
 	#button:disabled {
@@ -194,12 +180,6 @@
 	#button:hover:disabled {
 		transform: none;
 		cursor: not-allowed;
-	}
-
-	.dots {
-		display: inline-block;
-		width: 2ch;
-		text-align: left;
 	}
 
 	#register {

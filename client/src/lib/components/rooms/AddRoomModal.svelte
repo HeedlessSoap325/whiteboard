@@ -139,7 +139,7 @@
 						Creating...
 					{:else}
 						<Icon icon="tabler:plus" aria-hidden="true" />
-						Create room
+						Create
 					{/if}
 				</button>
 			</div>
@@ -363,6 +363,9 @@
 	#addModal .add {
 		border: none;
 		background: #eff6ff; color: #2563eb;
+		display: flex;
+		align-items: center;
+		gap: 2px;
 	}
 
 	#addModal .add:hover { 
@@ -373,15 +376,6 @@
 		margin-top: 4px; font-size: 12px;
 		color: #ef4444;
 		display: flex; align-items: center; gap: 4px;
-	}
-  
-	:global(.spin) { 
-		animation: spin 0.8s linear infinite; 
-	}
-	@keyframes spin { 
-		to { 
-			transform: rotate(360deg); 
-		} 
 	}
   
 	#addModal[open] {

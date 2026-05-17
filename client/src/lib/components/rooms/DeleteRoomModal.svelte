@@ -46,7 +46,15 @@
 		<span class="text">This action is permanent and cannot be undone.</span>
         <div id="buttons">
             <button class="cancel" onclick={onClose}>Cancel</button>
-            <button class="delete" onclick={confirmDelete}><Icon icon="tabler:trash" aria-hidden="true"/> {isLoading ? "Deleting..." : "Delete"}</button>
+            <button class="delete" onclick={confirmDelete}> 
+				{#if isLoading}
+					<Icon icon="tabler:loader-2" class="spin" aria-hidden="true" />
+					Deleting...
+				{:else}
+					<Icon icon="tabler:trash" aria-hidden="true" />
+					delete
+				{/if}
+			</button>
         </div>
         {#if errorMessage}
             <div id="errors">
@@ -127,6 +135,10 @@
 		border: none;
 		background: #fef2f2;
 		color: #ef4444;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 2px;
 	}
 
 	#deleteModal .delete:hover { 
