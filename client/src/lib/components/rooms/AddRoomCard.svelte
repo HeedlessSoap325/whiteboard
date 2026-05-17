@@ -1,16 +1,17 @@
 <script>
     import Icon from "@iconify/svelte";
+    import AddRoomModal from "./AddRoomModal.svelte";
 
-	function addRoom() {
-		console.log("Add Room")
-	}
+	let showModal = $state(false);
 </script>
 
 <div id="room" class="room-card">
-	<button id="btn" onclick={addRoom}>
+	<button id="btn" onclick={() => showModal = true}>
 		<Icon icon="tabler:plus" aria-hidden="true"/>
 	</button>
 </div>
+
+<AddRoomModal bind:showModal></AddRoomModal>
 
 <style>
 	.room-card {
