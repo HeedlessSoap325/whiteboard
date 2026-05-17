@@ -50,6 +50,7 @@
         gap: 14px;
         transition: border-color 0.15s, box-shadow 0.15s;
         max-width: 240px;
+        min-width: 240px;
     }
 
     .room-card:hover {

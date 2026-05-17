@@ -1,5 +1,6 @@
 <script lang="ts">
     import { env } from "$env/dynamic/public";
+    import AddRoomCard from "$lib/components/rooms/AddRoomCard.svelte";
     import DeleteRoomModal from "$lib/components/rooms/DeleteRoomModal.svelte";
     import RoomCard from "$lib/components/rooms/RoomCard.svelte";
     import { getSession, verifySession, type User } from "$lib/guards/user";
@@ -56,7 +57,20 @@
 	<p>{@html errorMessage}</p>
 {/if}
 
-{#each rooms as room (room.name)}
-	<RoomCard room={room} user={user!} onDeleteRequest={(r) => { roomToDelete = r; dialog!.showModal(); }}></RoomCard>
-{/each}
-<DeleteRoomModal bind:dialog room={roomToDelete} onClose={() => { dialog!.close(); roomToDelete = null; }}></DeleteRoomModal>
+<div id="room-cards">
+	{#each rooms as room (room.name)}
+		<RoomCard room={room} user={user!} onDeleteRequest={(r) => { roomToDelete = r; dialog!.showModal(); }}></RoomCard>
+	{/each}
+	<AddRoomCard></AddRoomCard>
+
+	<DeleteRoomModal bind:dialog room={roomToDelete} onClose={() => { dialog!.close(); roomToDelete = null; }}></DeleteRoomModal>
+</div>
+
+<style>
+	#room-cards {
+		padding: 2em;
+		display: flex;
+		flex-direction: row;
+		gap: 2em;
+	}
+</style>
