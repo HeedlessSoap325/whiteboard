@@ -62,15 +62,16 @@
 		<RoomCard room={room} user={user!} onDeleteRequest={(r) => { roomToDelete = r; dialog!.showModal(); }}></RoomCard>
 	{/each}
 	<AddRoomCard refreshRooms={fetchRooms}></AddRoomCard>
-
-	<DeleteRoomModal bind:dialog room={roomToDelete} onClose={() => { dialog!.close(); roomToDelete = null; }} refreshRooms={fetchRooms}></DeleteRoomModal>
 </div>
+
+<DeleteRoomModal bind:dialog room={roomToDelete} onClose={() => { dialog!.close(); roomToDelete = null; }} refreshRooms={fetchRooms}></DeleteRoomModal>
 
 <style>
 	#room-cards {
 		padding: 2em;
 		display: flex;
 		flex-direction: row;
+		flex-wrap: wrap;
 		gap: 2em;
 	}
 </style>

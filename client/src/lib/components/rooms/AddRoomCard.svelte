@@ -20,7 +20,7 @@
         background: white;
         border: 2px dashed #d8d8d8;
         border-radius: 12px;
-        padding: 1.1rem 1.25rem;
+        padding: 2em;
         display: flex;
         align-items: center;
 		justify-content: center;
@@ -28,6 +28,8 @@
         transition: border-color 0.15s, box-shadow 0.15s;
         max-width: 240px;
         min-width: 240px;
+		min-height: 110px;
+		max-height: 110px;
     }
 
     .room-card:hover {

@@ -44,13 +44,15 @@
         background: white;
         border: 1px solid #e8e8e8;
         border-radius: 12px;
-        padding: 1.1rem 1.25rem;
+        padding: 2em;
         display: flex;
         flex-direction: column;
         gap: 14px;
         transition: border-color 0.15s, box-shadow 0.15s;
         max-width: 240px;
         min-width: 240px;
+        min-height: 110px;
+        max-height: 110px;
     }
 
     .room-card:hover {
