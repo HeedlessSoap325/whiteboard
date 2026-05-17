@@ -1,6 +1,8 @@
 <script lang="ts">
     import { env } from "$env/dynamic/public";
+    import DeleteRoomModal from "$lib/components/rooms/DeleteRoomModal.svelte";
     import RoomCard from "$lib/components/rooms/RoomCard.svelte";
+    import { getSession, verifySession, type User } from "$lib/guards/user";
     import { getErrors } from "$lib/shared";
     import type { Room } from "$lib/types";
     import { onMount } from "svelte";
@@ -8,6 +10,11 @@
 	let rooms = $state<Room[]>([]);
 	let isLoading = $state(false);
 	let errorMessage = $state("");
+
+	let roomToDelete: Room | null = $state(null);
+	let dialog: HTMLDialogElement | undefined = $state(undefined);
+	let user: User | null = $state(null);
+
 
 	async function fetchRooms() {
 		isLoading = true;
@@ -35,7 +42,12 @@
         }
 	}
 
-	onMount(fetchRooms);
+	onMount(async () => {
+		await fetchRooms();
+		if (await verifySession()) {
+			user = await getSession(); // user must be valide now
+		}
+	});
 </script>
 
 <button onclick={fetchRooms}>{isLoading ? "Loading..." : "Refresh"}</button>
@@ -45,5 +57,6 @@
 {/if}
 
 {#each rooms as room (room.name)}
-	<RoomCard room={room}></RoomCard>
+	<RoomCard room={room} user={user!} onDeleteRequest={(r) => { roomToDelete = r; dialog!.showModal(); }}></RoomCard>
 {/each}
+<DeleteRoomModal bind:dialog room={roomToDelete} onClose={() => { dialog!.close(); roomToDelete = null; }}></DeleteRoomModal>
