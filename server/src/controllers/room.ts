@@ -41,10 +41,15 @@ export async function createRoom(req: any, res: any) {
 	const existingRoom: Room | null = db.data.rooms.find((r: Room) => r.name === data.name);
 	if (existingRoom) return res.status(404).json(errorify(`Room '${data.name}' already exists!`));
 
-	const allowedParticipants: String[] = data.allowedParticipants;
+	let allowedParticipants: String[] = data.allowedParticipants;
 	allowedParticipants.push(req.session.user.name);
 
 	const isPublic = allowedParticipants.includes("*");
+
+	if (!isPublic) {
+		const temp = new Set(allowedParticipants);
+		allowedParticipants = Array.from(temp.values());
+	}
 
 	const room: Room = {
 		owner: req.session.user.name,
