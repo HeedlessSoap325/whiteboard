@@ -1,0 +1,51 @@
+<script>
+    import Icon from "@iconify/svelte";
+
+	function addRoom() {
+		console.log("Add Room")
+	}
+</script>
+
+<div id="room" class="room-card">
+	<button id="btn" onclick={addRoom}>
+		<Icon icon="tabler:plus" aria-hidden="true"/>
+	</button>
+</div>
+
+<style>
+	.room-card {
+        background: white;
+        border: 2px dashed #d8d8d8;
+        border-radius: 12px;
+        padding: 1.1rem 1.25rem;
+        display: flex;
+        align-items: center;
+		justify-content: center;
+        gap: 14px;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        max-width: 240px;
+        min-width: 240px;
+    }
+
+    .room-card:hover {
+        border-color: #d0d0d0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+	#btn {
+		border: none;
+		outline: none;
+		cursor: pointer;
+		transform: scale(3);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: white;
+		border-radius: 50%;
+		padding: 0.25em;
+	}
+
+	#btn:hover {
+		background-color: #ededed;
+	}
+</style>
