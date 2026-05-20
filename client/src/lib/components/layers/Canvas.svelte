@@ -28,6 +28,9 @@
 	let startCoords: number[] = [];
 	let last: number[] = [0, 0];
 
+	const maxScaleFactor = 3;
+	let scale: number = 1;
+
 	onMount(() => {
 		canvas.width = window.innerWidth;
     	canvas.height = window.innerHeight;
@@ -53,6 +56,7 @@
 			canvas.removeEventListener('mousedown', startPaning);
 			canvas.removeEventListener('mousemove', pan);
 			canvas.removeEventListener('mouseup', endPaning);
+			document.removeEventListener('wheel', zoom);
 		} else {
 			canvas.removeEventListener('pointerdown', startDraw);
 			canvas.removeEventListener('pointermove', draw);
@@ -62,6 +66,7 @@
 			canvas.addEventListener('mousedown', startPaning);
 			canvas.addEventListener('mousemove', pan);
 			canvas.addEventListener('mouseup', endPaning);
+			document.addEventListener('wheel', zoom);
 		}
 	})
 
@@ -135,8 +140,8 @@
 	function getPoint(e: PointerEvent): StrokePoint {
 		const rect = canvas.getBoundingClientRect();
 		return {
-			x: (e.clientX - rect.left) - last[0],
-			y: (e.clientY - rect.top) - last[1],
+			x: ((e.clientX - rect.left) - last[0]) / scale,
+			y: ((e.clientY - rect.top) - last[1]) / scale,
 			pressure: e.pressure * 1.5 || 1.5
 		}
 	}
@@ -186,13 +191,12 @@
 	function redrawCanvas(strokes: Stroke[]) {
 		if (!ctx) return;
 		const transform = ctx.getTransform();
-    
-		const x = -transform.e / transform.a;
-		const y = -transform.f / transform.d;
-		const w = canvas.width / transform.a;
-		const h = canvas.height / transform.d;
 
-		ctx.clearRect(x, y, w, h);
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		// Apply pan + zoom as one clean transform
+		ctx.setTransform(scale, 0, 0, scale, transform.e, transform.f);
 
 		console.log("re-drawing", $strokesStore.entries().toArray().length)
 		strokes.forEach((stroke) => {
@@ -287,6 +291,29 @@
 			e.offsetX - startCoords[0],
 			e.offsetY - startCoords[1]
 		];
+	}
+
+	function zoom(e: WheelEvent) {
+		e.preventDefault();
+		const delta = e.deltaY > 0 ? -0.1 : 0.1;
+		const newScale = Math.min(Math.max(scale + delta, 1 / maxScaleFactor), maxScaleFactor);
+
+		const rect = canvas.getBoundingClientRect();
+		const mx = e.clientX - rect.left;
+		const my = e.clientY - rect.top;
+
+		const transform = ctx!.getTransform();
+		let panX = transform.e;
+		let panY = transform.f;
+		
+		panX = mx - (mx - panX) * (newScale / scale);
+    	panY = my - (my - panY) * (newScale / scale);
+
+		last = [ panX, panY ];
+
+		ctx!.setTransform(1, 0, 0, 1, panX, panY);
+		scale = newScale;
+		redrawCanvas($strokesStore);
 	}
 </script>
 
