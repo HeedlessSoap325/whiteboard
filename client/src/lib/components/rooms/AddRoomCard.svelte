@@ -26,8 +26,8 @@
 		justify-content: center;
         gap: 14px;
         transition: border-color 0.15s, box-shadow 0.15s;
-        max-width: 240px;
-        min-width: 240px;
+        max-width: 238px;
+        min-width: 238px;
 		min-height: 110px;
 		max-height: 110px;
     }
