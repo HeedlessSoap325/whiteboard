@@ -24,6 +24,10 @@
 	let erasingPoint1: StrokePoint | null = null;
 	let erasingPoint2: StrokePoint | null = null;
 
+	let isPaning = false;
+	let startCoords: number[] = [];
+	let last: number[] = [0, 0];
+
 	onMount(() => {
 		canvas.width = window.innerWidth;
     	canvas.height = window.innerHeight;
@@ -45,11 +49,19 @@
 			canvas.addEventListener('pointermove', draw);
 			canvas.addEventListener('pointerup', endDraw);
 			canvas.addEventListener('pointerleave', endDraw);
+
+			canvas.removeEventListener('mousedown', startPaning);
+			canvas.removeEventListener('mousemove', pan);
+			canvas.removeEventListener('mouseup', endPaning);
 		} else {
 			canvas.removeEventListener('pointerdown', startDraw);
 			canvas.removeEventListener('pointermove', draw);
 			canvas.removeEventListener('pointerup', endDraw);
 			canvas.removeEventListener('pointerleave', endDraw);
+
+			canvas.addEventListener('mousedown', startPaning);
+			canvas.addEventListener('mousemove', pan);
+			canvas.addEventListener('mouseup', endPaning);
 		}
 	})
 
@@ -122,10 +134,9 @@
 
 	function getPoint(e: PointerEvent): StrokePoint {
 		const rect = canvas.getBoundingClientRect();
-
 		return {
-			x: e.clientX - rect.left,
-			y: e.clientY - rect.top,
+			x: (e.clientX - rect.left) - last[0],
+			y: (e.clientY - rect.top) - last[1],
 			pressure: e.pressure * 1.5 || 1.5
 		}
 	}
@@ -174,7 +185,14 @@
 
 	function redrawCanvas(strokes: Stroke[]) {
 		if (!ctx) return;
-		ctx.clearRect(0, 0, canvas.width, canvas.height)
+		const transform = ctx.getTransform();
+    
+		const x = -transform.e / transform.a;
+		const y = -transform.f / transform.d;
+		const w = canvas.width / transform.a;
+		const h = canvas.height / transform.d;
+
+		ctx.clearRect(x, y, w, h);
 
 		console.log("re-drawing", $strokesStore.entries().toArray().length)
 		strokes.forEach((stroke) => {
@@ -240,6 +258,35 @@
 		if(!(unknownA >= 0 && unknownA <= 1 && unknownB >= 0 && unknownB <= 1)) return false;
 
 		return true;
+	}
+
+	function startPaning(e: MouseEvent) {
+		isPaning = true;
+
+		startCoords = [
+			e.offsetX - last[0],
+			e.offsetY - last[1]
+		];
+	}
+
+	function pan(e: MouseEvent) {	
+		if(!isPaning) return;
+
+		var x = e.offsetX;
+		var y = e.offsetY;
+
+		ctx!.setTransform(1, 0, 0, 1, x - startCoords[0], y - startCoords[1]);
+
+		redrawCanvas($strokesStore);
+	}
+
+	function endPaning(e: MouseEvent) {
+		isPaning = false;
+
+		last = [
+			e.offsetX - startCoords[0],
+			e.offsetY - startCoords[1]
+		];
 	}
 </script>
 
