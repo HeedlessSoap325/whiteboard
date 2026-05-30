@@ -2,8 +2,7 @@
     import { onMount } from "svelte";
 	import { browser } from '$app/environment';
     import { destroyProvider, getPresence } from "$lib/sync/provider";
-    import CanvasLayer from "$lib/components/layers/Canvas.svelte";
-    import TextLayer from "$lib/components/layers/Text.svelte";
+    import Whiteboard from "$lib/components/layers/Whiteboard.svelte";
     import { modeStore } from "$lib/stores/tool";
     import { Mode } from "$lib/types";
     import {v4 as uuidv4} from "uuid";
@@ -56,5 +55,4 @@
     }
 </script>
 
-<CanvasLayer></CanvasLayer>
-<TextLayer></TextLayer>
+<Whiteboard/>

@@ -3,8 +3,9 @@
     import { notesStore } from "$lib/stores/whiteboard";
     import { getNotes } from "$lib/sync/provider";
     import { Mode, type Note } from "$lib/types";
-    import { onMount } from "svelte";
-	import {v4 as uuidv4} from "uuid";
+    import { getContext, onMount } from "svelte";
+
+	const { screenToWorld, transform } = getContext("viewport");
 
 	let lastClick = $state(0);
 	let editingId = $state("");
@@ -37,23 +38,24 @@
 		lastClick = now;
 
 		if (isDoubleClick) {
-			createTextAt(e.clientX, e.clientY);
+			e.preventDefault();
+			createTextAt(e);
 		}
 	}
 
-	function createTextAt(x: number, y: number) {
-		const textId = uuidv4();
+	function createTextAt(e: MouseEvent) {
+		const textId = crypto.randomUUID();
+		const worldPos = screenToWorld(e.clientX, e.clientY);
 
 		const note = {
 			id: textId,
-			x, y,
+			x: worldPos.x, 
+			y: worldPos.y,
 			content: "",
 		}
 		getNotes().push([note]);
 
 		editingId = textId;
-
-		console.log($notesStore)
 	}
 
 	function updateNote(id: string, updater: (note: Note) => Partial<Note>) {
@@ -83,7 +85,7 @@
 		if (newContent.trim() === "") {
 			deleteNote(id);
 		} else {
-			updateNote(editingId, () => ({content: newContent}));
+			updateNote(editingId, () => ({ content: newContent }));
 		}
 		
 		editingId = "";
@@ -105,9 +107,11 @@
 	function onMouseMove(e: MouseEvent) {
 		if (!dragging) return;
 
+		const worldPos = screenToWorld(e.clientX, e.clientY);
+
 		updateNote(dragging.id, (note) => ({
-			x: note.x + e.clientX - dragging.x,
-			y: note.y + e.clientY - dragging.y,
+			x: worldPos.x,
+			y: worldPos.y,
 		}));
 
 		dragging.x = e.clientX;
@@ -119,16 +123,16 @@
 	}
 </script>
 
-<div id="text-layer">
+<div id="text-layer" style={`transform: ${transform()}`}>
     {#each $notesStore as text}
 		{#if editingId === text.id}
 			<textarea
 				onblur={(e) => {finishNoteUpdate(text.id, e.target!.value)}}
 				onpointerdown={(e) => {e.stopPropagation();}}
-				style="transform: translate({text.x}px, {text.y}px)"
+				style="left: {text.x}px; top: {text.y}px; position: absolute;"
 			>{text.content}</textarea>
 		{:else}
-			<div class:movable={$modeStore === Mode.MOUSE} role="cell" tabindex="0" onmousedown={(e) => onMouseDown(e, text.id)} class="text-item" style="transform: translate({text.x}px, {text.y}px)">
+			<div class:movable={$modeStore === Mode.MOUSE} role="cell" tabindex="0" onmousedown={(e) => onMouseDown(e, text.id)} class="text-item" style="left: {text.x}px; top: {text.y}px; position: absolute;">
 				{text.content}
 			</div>
 		{/if}	
@@ -137,8 +141,11 @@
 
 <style>
 	#text-layer {
+		position: absolute;
+		inset: 0;
 		width: 100vw;
 		height: 100vh;
+		transform-origin: 0 0;
 	}
 
 	.text-item, textarea {
@@ -149,6 +156,7 @@
 	.text-item {
         position: absolute;
         cursor: none;
+		pointer-events: all;
     }
 
 	.text-item.movable {

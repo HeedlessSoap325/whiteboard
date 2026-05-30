@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { Mode, StrokeToolType, type Stroke, type StrokePoint, type StrokeTool } from "$lib/types";
     import { getStrokes } from "$lib/sync/provider";
-	import { onMount } from "svelte";
+	import { getContext, onMount } from "svelte";
     import { strokesStore } from "$lib/stores/whiteboard";
     import Toolbar from "$lib/components/Canvas/Toolbar.svelte";
     import { modeStore } from "$lib/stores/tool";
 	import {v4 as uuidv4} from "uuid";
+
+	const { pan, zoom, screenToWorld, worldToScreen } = getContext("viewport");
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D | null = null;
@@ -24,13 +26,6 @@
 	let erasingPoint1: StrokePoint | null = null;
 	let erasingPoint2: StrokePoint | null = null;
 
-	let isPaning = false;
-	let startCoords: number[] = [];
-	let last: number[] = [0, 0];
-
-	const maxScaleFactor = 3;
-	let scale: number = 1;
-
 	onMount(() => {
 		canvas.width = window.innerWidth;
     	canvas.height = window.innerHeight;
@@ -48,27 +43,23 @@
 
 	$effect(() => {
 		if ($modeStore === Mode.DRAWING) {
-			canvas.addEventListener('pointerdown', startDraw);
-			canvas.addEventListener('pointermove', draw);
-			canvas.addEventListener('pointerup', endDraw);
-			canvas.addEventListener('pointerleave', endDraw);
-
-			canvas.removeEventListener('mousedown', startPaning);
-			canvas.removeEventListener('mousemove', pan);
-			canvas.removeEventListener('mouseup', endPaning);
-			document.removeEventListener('wheel', zoom);
+			window.addEventListener('pointerdown', startDraw);
+			window.addEventListener('pointermove', draw);
+			window.addEventListener('pointerup', endDraw);
+			window.addEventListener('pointerleave', endDraw);
 		} else {
-			canvas.removeEventListener('pointerdown', startDraw);
-			canvas.removeEventListener('pointermove', draw);
-			canvas.removeEventListener('pointerup', endDraw);
-			canvas.removeEventListener('pointerleave', endDraw);
-
-			canvas.addEventListener('mousedown', startPaning);
-			canvas.addEventListener('mousemove', pan);
-			canvas.addEventListener('mouseup', endPaning);
-			document.addEventListener('wheel', zoom);
+			window.removeEventListener('pointerdown', startDraw);
+			window.removeEventListener('pointermove', draw);
+			window.removeEventListener('pointerup', endDraw);
+			window.removeEventListener('pointerleave', endDraw);
 		}
-	})
+	});
+
+	$effect(() => {
+		if (pan || zoom) {
+			redrawCanvas($strokesStore);
+		}
+	});
 
 	function startDraw(e: PointerEvent) {
 		e.preventDefault();
@@ -138,11 +129,9 @@
 	}
 
 	function getPoint(e: PointerEvent): StrokePoint {
-		const rect = canvas.getBoundingClientRect();
 		return {
-			x: ((e.clientX - rect.left) - last[0]) / scale,
-			y: ((e.clientY - rect.top) - last[1]) / scale,
-			pressure: e.pressure * 1.5 || 1.5
+			...screenToWorld(e.clientX, e.clientY),
+			pressure: e.pressure * 1.5 || 1.5,
 		}
 	}
 
@@ -154,10 +143,12 @@
 			// fallback for first points
 			const p1 = points[len - 2]
 			const p2 = points[len - 1]
+			const screenP1 = worldToScreen(p1.x, p1.y);
+			const screenP2 = worldToScreen(p2.x, p2.y);
 
 			ctx.beginPath()
-			ctx.moveTo(p1.x, p1.y)
-			ctx.lineTo(p2.x, p2.y)
+			ctx.moveTo(screenP1.x, screenP1.y)
+			ctx.lineTo(screenP2.x, screenP2.y)
 			ctx.stroke()
 			return
 		}
@@ -165,23 +156,26 @@
 		const p0 = points[len - 3]
 		const p1 = points[len - 2]
 		const p2 = points[len - 1]
+		const screenP0 = worldToScreen(p0.x, p0.y);
+		const screenP1 = worldToScreen(p1.x, p1.y);
+		const screenP2 = worldToScreen(p2.x, p2.y);
 
 		const mid1 = {
-			x: (p0.x + p1.x) / 2,
-			y: (p0.y + p1.y) / 2
+			x: (screenP0.x + screenP1.x) / 2,
+			y: (screenP0.y + screenP1.y) / 2
 		}
 
 		const mid2 = {
-			x: (p1.x + p2.x) / 2,
-			y: (p1.y + p2.y) / 2
+			x: (screenP1.x + screenP2.x) / 2,
+			y: (screenP1.y + screenP2.y) / 2
 		}
 
 		ctx.beginPath()
 		ctx.moveTo(mid1.x, mid1.y)
-		ctx.quadraticCurveTo(p1.x, p1.y, mid2.x, mid2.y)
+		ctx.quadraticCurveTo(screenP1.x, screenP1.y, mid2.x, mid2.y)
 
 		ctx.strokeStyle = stroke.color
-		ctx.lineWidth = stroke.width * p2.pressure
+		ctx.lineWidth = stroke.width * screenP2.pressure
 		ctx.lineCap = 'round'
 		ctx.lineJoin = 'round'
 
@@ -190,19 +184,16 @@
 
 	function redrawCanvas(strokes: Stroke[]) {
 		if (!ctx) return;
-		const transform = ctx.getTransform();
-
-		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		
+		ctx.save();
 
 		// Apply pan + zoom as one clean transform
-		ctx.setTransform(scale, 0, 0, scale, transform.e, transform.f);
+		ctx.setTransform(zoom(), 0, 0, zoom(), pan().x, pan().y);
 
-		console.log("re-drawing", $strokesStore.entries().toArray().length)
-		strokes.forEach((stroke) => {
-			if (!ctx) return;
-			drawStroke(ctx, stroke);
-		})
+		strokes.forEach((stroke) => { drawStroke(ctx!, stroke); });
+
+		ctx.restore();
 	}
 
 	function drawStroke(ctx: CanvasRenderingContext2D, stroke: Stroke) {
@@ -263,58 +254,6 @@
 
 		return true;
 	}
-
-	function startPaning(e: MouseEvent) {
-		isPaning = true;
-
-		startCoords = [
-			e.offsetX - last[0],
-			e.offsetY - last[1]
-		];
-	}
-
-	function pan(e: MouseEvent) {	
-		if(!isPaning) return;
-
-		var x = e.offsetX;
-		var y = e.offsetY;
-
-		ctx!.setTransform(1, 0, 0, 1, x - startCoords[0], y - startCoords[1]);
-
-		redrawCanvas($strokesStore);
-	}
-
-	function endPaning(e: MouseEvent) {
-		isPaning = false;
-
-		last = [
-			e.offsetX - startCoords[0],
-			e.offsetY - startCoords[1]
-		];
-	}
-
-	function zoom(e: WheelEvent) {
-		e.preventDefault();
-		const delta = e.deltaY > 0 ? -0.1 : 0.1;
-		const newScale = Math.min(Math.max(scale + delta, 1 / maxScaleFactor), maxScaleFactor);
-
-		const rect = canvas.getBoundingClientRect();
-		const mx = e.clientX - rect.left;
-		const my = e.clientY - rect.top;
-
-		const transform = ctx!.getTransform();
-		let panX = transform.e;
-		let panY = transform.f;
-		
-		panX = mx - (mx - panX) * (newScale / scale);
-    	panY = my - (my - panY) * (newScale / scale);
-
-		last = [ panX, panY ];
-
-		ctx!.setTransform(1, 0, 0, 1, panX, panY);
-		scale = newScale;
-		redrawCanvas($strokesStore);
-	}
 </script>
 
 <canvas id="canvas" bind:this={canvas}></canvas>
@@ -322,9 +261,11 @@
 
 <style>
 	#canvas {
-		position: fixed;
+		position: absolute;
 		top: 0;
 		left: 0;
+		width: 100%;
+		height: 100%;
 		margin: 0;
 		touch-action: none;
 		pointer-events: auto;
