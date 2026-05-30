@@ -1,0 +1,14 @@
+{
+	"name": "whiteboard",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev:server": "cd ./server && npm run dev",
+		"dev:client": "cd ./client && npm run dev",
+		"dev": "concurrently 'npm:dev:server' 'npm:dev:client'"
+	},
+	"dependencies": {
+		"concurrently": "^10.0.0"
+	}
+}
