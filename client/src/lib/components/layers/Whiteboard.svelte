@@ -3,11 +3,7 @@
     import WorldCanvas from "./WorldCanvas.svelte";
     import WorldOverlay from "./WorldOverlay.svelte";
     import ScreenOverlay from "./ScreenOverlay.svelte";
-
-	interface PanState {
-		x: number,
-		y: number,
-	}
+    import type { PanState, ViewportContext } from "$lib/types";
 
 	let pan  = $state<PanState>({ x: 0, y: 0 });
 	let zoom = $state<number>(1);
@@ -33,7 +29,7 @@
 		};
 	}
 
-	setContext("viewport", {pan: () => pan, zoom: () => zoom, transform: () => transform, screenToWorld, worldToScreen});
+	setContext<ViewportContext>("viewport", {pan: () => pan, zoom: () => zoom, transform: () => transform, screenToWorld, worldToScreen});
 
 	function onPointerDown(event: PointerEvent) {
 		if (event.button === 1 || (event.button === 0 && event.altKey)) { // middle click or alt+drag, TODO: find a easier way to do this

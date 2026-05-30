@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Mode, StrokeToolType, type Stroke, type StrokePoint, type StrokeTool } from "$lib/types";
+	import { Mode, StrokeToolType, type Stroke, type StrokePoint, type StrokeTool, type ViewportContext } from "$lib/types";
     import { getStrokes } from "$lib/sync/provider";
 	import { getContext, onMount } from "svelte";
     import { strokesStore } from "$lib/stores/whiteboard";
@@ -7,7 +7,7 @@
     import { modeStore } from "$lib/stores/tool";
 	import {v4 as uuidv4} from "uuid";
 
-	const { pan, zoom, screenToWorld, worldToScreen } = getContext("viewport");
+	const { pan, zoom, screenToWorld, worldToScreen } = getContext<ViewportContext>("viewport");
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D | null = null;
@@ -56,7 +56,7 @@
 	});
 
 	$effect(() => {
-		if (pan || zoom) {
+		if (pan() || zoom()) {
 			redrawCanvas($strokesStore);
 		}
 	});
@@ -175,7 +175,7 @@
 		ctx.quadraticCurveTo(screenP1.x, screenP1.y, mid2.x, mid2.y)
 
 		ctx.strokeStyle = stroke.color
-		ctx.lineWidth = stroke.width * screenP2.pressure
+		ctx.lineWidth = stroke.width * p2.pressure
 		ctx.lineCap = 'round'
 		ctx.lineJoin = 'round'
 

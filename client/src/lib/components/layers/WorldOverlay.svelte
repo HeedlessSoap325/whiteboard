@@ -2,10 +2,10 @@
     import { modeStore } from "$lib/stores/tool";
     import { notesStore } from "$lib/stores/whiteboard";
     import { getNotes } from "$lib/sync/provider";
-    import { Mode, type Note } from "$lib/types";
+    import { Mode, type ViewportContext, type Note } from "$lib/types";
     import { getContext, onMount } from "svelte";
 
-	const { screenToWorld, transform } = getContext("viewport");
+	const { screenToWorld, transform } = getContext<ViewportContext>("viewport");
 
 	let lastClick = $state(0);
 	let editingId = $state("");
@@ -127,6 +127,7 @@
     {#each $notesStore as text}
 		{#if editingId === text.id}
 			<textarea
+				                                                    /* @ts-ignore */
 				onblur={(e) => {finishNoteUpdate(text.id, e.target!.value)}}
 				onpointerdown={(e) => {e.stopPropagation();}}
 				style="left: {text.x}px; top: {text.y}px; position: absolute;"

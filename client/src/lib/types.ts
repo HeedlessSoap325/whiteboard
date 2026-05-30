@@ -42,3 +42,16 @@ export interface Room {
 	allowedParticipants: String[],
 	numActiveUsers?: number,
 }
+
+export interface PanState {
+	x: number,
+	y: number,
+}
+
+export interface ViewportContext {
+	pan: () => PanState,
+	zoom: () => number,
+	screenToWorld: (screenX: number, screenY: number) => PanState,
+	worldToScreen: (worldX: number, worldY: number) => PanState,
+	transform: () => string
+}
