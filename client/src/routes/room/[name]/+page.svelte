@@ -5,7 +5,6 @@
     import Whiteboard from "$lib/components/layers/Whiteboard.svelte";
     import { modeStore } from "$lib/stores/tool";
     import { Mode } from "$lib/types";
-    import {v4 as uuidv4} from "uuid";
 
     let states = $state<any[]>([]);
     let prevMode = $state<Mode | null>(null);
@@ -16,7 +15,7 @@
         window.addEventListener("pointerup",   handlePointerDeviceInteractionEnd);
 
         const presence = getPresence();
-        presence.setLocalStateField("name", uuidv4());
+        presence.setLocalStateField("name", crypto.randomUUID());
 
         const handler = () => {
             states = Array.from(presence.getStates().entries())
