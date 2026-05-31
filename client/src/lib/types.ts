@@ -20,7 +20,6 @@ export interface StrokeTool {
 	color: string,
 	width: number,
 	type: StrokeToolType,
-	positionIndex: number,
 	selected: boolean,
 }
 
