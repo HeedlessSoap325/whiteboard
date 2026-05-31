@@ -6,7 +6,13 @@ import { page } from "$app/state";
 import { goto } from "$app/navigation";
 import { resolve } from "$app/paths";
 
-const globalAny = globalThis as any;
+const globalAny = globalThis as unknown as {
+    __yInstance : {
+        roomId: string,
+        provider: WebsocketProvider,
+        doc: Y.Doc,
+    }
+};
 
 export function getProvider(): { doc: Y.Doc; provider: WebsocketProvider } {
     // Never run on the server

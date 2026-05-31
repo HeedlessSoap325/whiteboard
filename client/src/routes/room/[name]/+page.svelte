@@ -5,7 +5,7 @@
     import { modeStore } from "$lib/stores/tool";
     import { Mode } from "$lib/types";
 
-    let states = $state<any[]>([]);
+    let states = $state<[number, { [x: string]: unknown; }][]>([]);
     let prevMode = $state<Mode | null>(null);
 
     onMount(() => {
