@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Mode, StrokeToolType, type Stroke, type StrokePoint, type StrokeTool, type ViewportContext } from "$lib/types";
+	import { Mode, StrokeToolType, type Stroke, type StrokePoint, type ViewportContext } from "$lib/types";
     import { getStrokes } from "$lib/sync/provider";
 	import { getContext, onMount } from "svelte";
     import { strokesStore } from "$lib/stores/whiteboard";
@@ -218,7 +218,7 @@
 	}
 
 	// Source - https://stackoverflow.com/a/31704928 Posted by markE Retrieved 2026-03-27, License - CC BY-SA 3.0
-	function line2lineIntersecting(p0: StrokePoint, p1: StrokePoint, p2: StrokePoint, p3: StrokePoint): Boolean {
+	function line2lineIntersecting(p0: StrokePoint, p1: StrokePoint, p2: StrokePoint, p3: StrokePoint): boolean {
 
 		let unknownA 		= (p3.x-p2.x) * (p0.y-p2.y) - (p3.y-p2.y) * (p0.x-p2.x);
 		let unknownB 		= (p1.x-p0.x) * (p0.y-p2.y) - (p1.y-p0.y) * (p0.x-p2.x);

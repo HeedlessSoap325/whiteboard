@@ -120,7 +120,7 @@
 					</div>
 					{#if allowedParticipants.length > 0}
 					<div class="chips">
-						{#each allowedParticipants as participant}
+						{#each allowedParticipants as participant (participant)}
 						<span class="chip">
 							{participant}
 							<button type="button" onclick={() => removeParticipant(participant)} aria-label="Remove {participant}">×</button>

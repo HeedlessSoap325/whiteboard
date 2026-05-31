@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount } from "svelte";
-	import { browser } from '$app/environment';
     import { destroyProvider, getPresence } from "$lib/sync/provider";
     import Whiteboard from "$lib/components/layers/Whiteboard.svelte";
     import { modeStore } from "$lib/stores/tool";

@@ -39,7 +39,7 @@ export interface Room {
 	name: string,
 	owner: string,
 	public: boolean,
-	allowedParticipants: String[],
+	allowedParticipants: string[],
 	numActiveUsers?: number,
 }
 

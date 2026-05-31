@@ -1,4 +1,3 @@
-import { goto } from '$app/navigation';
 import { env } from '$env/dynamic/public';
 
 export interface User {

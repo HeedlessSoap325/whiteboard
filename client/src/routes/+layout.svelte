@@ -8,14 +8,15 @@
     import { page } from '$app/state'
     import { verifySession } from '$lib/guards/user';
     import { onMount } from 'svelte';
+    import { resolve } from '$app/paths';
 
     onMount(async () => {
 		const isVerified = await verifySession();
 
 		if (browser && !isVerified && !(page.url.pathname === "/login" || page.url.pathname === "/register")) {
-			goto("/login");
+			goto(resolve("/login"));
 		} else if (browser && isVerified && (page.url.pathname === "/login" || page.url.pathname === "/register")) {
-			goto("/");
+			goto(resolve("/"));
 		}
 	});
 </script>

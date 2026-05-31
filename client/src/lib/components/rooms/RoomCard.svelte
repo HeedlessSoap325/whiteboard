@@ -1,5 +1,6 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { resolve } from "$app/paths";
     import { type User } from "$lib/guards/user";
     import type { Room } from "$lib/types";
     import Icon from "@iconify/svelte";
@@ -9,7 +10,7 @@
     const activeUsersText = $derived(`${room.numActiveUsers} / ` + (room.public ? "∞" : room.allowedParticipants.length));
 
     async function gotoRoom() {
-        await goto(`/room/${room.name}`);
+        await goto(resolve(`/room/${room.name}`));
     }
 </script>
 

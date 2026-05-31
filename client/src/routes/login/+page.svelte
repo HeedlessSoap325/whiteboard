@@ -33,7 +33,7 @@
                 errorMessage = getErrors(data) ?? "Login failed";
                 return;
             } else {
-				await goto("/");
+				await goto(resolve("/"));
 			}
 
         } catch (err) {

@@ -4,6 +4,7 @@ import { env } from '$env/dynamic/public';
 import { browser } from '$app/environment';
 import { page } from "$app/state";
 import { goto } from "$app/navigation";
+import { resolve } from "$app/paths";
 
 const globalAny = globalThis as any;
 
@@ -47,14 +48,14 @@ function setRoom(roomId: string) {
     provider.connect();
     globalAny.__yInstance = { doc, provider, roomId };
 
-    provider.on("connection-close", (ev, prov) => {
+    provider.on("connection-close", (ev) => {
         console.log(ev)
         if(ev && ev.code === 1006) {
             if(globalAny.__yInstance) {
                 globalAny.__yInstance.provider.destroy();
                 globalAny.__yInstance.doc.destroy();
             }
-            goto("/");
+            goto(resolve("/"));
         }
     });
 }

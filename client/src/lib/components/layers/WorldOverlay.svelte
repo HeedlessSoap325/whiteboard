@@ -58,14 +58,13 @@
 		editingId = textId;
 	}
 
-	function updateNote(id: string, updater: (note: Note) => Partial<Note>) {
+	function updateNote(id: string, update: Partial<Note>) {
 		const yarray = getNotes();
 		const index = yarray.toArray().findIndex((n: any) => n.id == id);
 
 		if (index !== -1) {
 			const note = yarray.get(index) as Note;
-			const notePart = updater(note);
-			const newNote = { ...note, ...notePart }
+			const newNote = { ...note, ...update }
 
 			yarray.delete(index, 1);
 			yarray.insert(index, [newNote]);
@@ -85,7 +84,7 @@
 		if (newContent.trim() === "") {
 			deleteNote(id);
 		} else {
-			updateNote(editingId, () => ({ content: newContent }));
+			updateNote(editingId, { content: newContent });
 		}
 		
 		editingId = "";
@@ -109,10 +108,10 @@
 
 		const worldPos = screenToWorld(e.clientX, e.clientY);
 
-		updateNote(dragging.id, (note) => ({
+		updateNote(dragging.id, {
 			x: worldPos.x,
 			y: worldPos.y,
-		}));
+		});
 
 		dragging.x = e.clientX;
 		dragging.y = e.clientY;
@@ -124,7 +123,7 @@
 </script>
 
 <div id="text-layer" style={`transform: ${transform()}`}>
-    {#each $notesStore as text}
+    {#each $notesStore as text (text.id)}
 		{#if editingId === text.id}
 			<textarea
 				                                                    /* @ts-ignore */

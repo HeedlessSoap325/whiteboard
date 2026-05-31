@@ -4,7 +4,7 @@
 </script>
 
 <div id="toolbar-container">
-	{#each $toolsStore as tool, index}
+	{#each $toolsStore as tool, index (index)}
 		<Tool tool={tool} toolIndex={index}></Tool>
 	{/each}
 </div>
