@@ -18,8 +18,8 @@
 	let currentTool = $state<StrokeTool | undefined>(undefined);
 
 	onMount(() => {
-		toolsStore.subscribe((tools) => currentTool = tools[toolIndex]);
-	})
+		toolsStore.subscribe((tools) => currentTool = tools[toolIndex]);	
+	});
 	
 	$effect(() => {
 		toolsStore.update(tools =>
@@ -47,7 +47,7 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class="tool" class:selected={currentTool?.selected} role="button" tabindex="0" onclick={selectTool}>
+<div class="tool" onpointerleave={() => popoverOpen = false} class:selected={currentTool?.selected} role="button" tabindex="0" onclick={selectTool}>
 	{#if currentTool?.selected && tool.type === StrokeToolType.PEN}
 		<div  class="tool-popover" role="button" tabindex="0" onclick={() => {popoverOpen = !popoverOpen}}>
 			<ArrowSVG color="#000000" width="15px" height="15px" />
@@ -126,7 +126,7 @@
 
 	.popover {
 		position: absolute;
-		bottom: 110%;
+		bottom: 104%;
 		left: 50%;
 		transform: translateX(-50%);
 
