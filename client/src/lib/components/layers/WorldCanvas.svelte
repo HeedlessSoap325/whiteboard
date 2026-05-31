@@ -3,20 +3,12 @@
     import { getStrokes } from "$lib/sync/provider";
 	import { getContext, onMount } from "svelte";
     import { strokesStore } from "$lib/stores/whiteboard";
-    import Toolbar from "$lib/components/Canvas/Toolbar.svelte";
-    import { modeStore } from "$lib/stores/tool";
+    import { modeStore, toolsStore } from "$lib/stores/tool";
 
 	const { pan, zoom, screenToWorld, worldToScreen } = getContext<ViewportContext>("viewport");
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D | null = null;
-
-	let currentTool: StrokeTool = $state<StrokeTool>({
-		color: '#000',
-		width: 2,
-		type: StrokeToolType.PEN,
-		positionIndex: -1,
-	})
 
 	let isDrawing = false;
 	let currentStroke: Stroke | null = null;
@@ -62,6 +54,8 @@
 
 	function startDraw(e: PointerEvent) {
 		e.preventDefault();
+		const currentTool = $toolsStore.find((tool) => tool.selected);
+		if (!currentTool) return;
 
 		if (currentTool.type === StrokeToolType.PEN) {
 			isDrawing = true;
@@ -256,7 +250,6 @@
 </script>
 
 <canvas id="canvas" bind:this={canvas}></canvas>
-<Toolbar bind:currentTool></Toolbar>
 
 <style>
 	#canvas {

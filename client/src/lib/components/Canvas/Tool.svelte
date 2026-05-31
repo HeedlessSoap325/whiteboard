@@ -4,8 +4,9 @@
     import PenSVG from "$lib/assets/PenSVG.svelte";
     import { modeStore, toolsStore } from "$lib/stores/tool";
     import { Mode, StrokeToolType, type StrokeTool } from "$lib/types";
+    import { onMount } from "svelte";
 
-	let {tool, toolIndex, currentTool = $bindable()}: {tool: StrokeTool, toolIndex: number, currentTool: StrokeTool} = $props();
+	let {tool, toolIndex}: {tool: StrokeTool, toolIndex: number} = $props();
 
 	let popoverOpen = $state(false);
 
@@ -13,54 +14,66 @@
 	let color = $state(tool.color);
 	// svelte-ignore state_referenced_locally
 	let width = $state(tool.width);
+
+	let currentTool = $state<StrokeTool | undefined>(undefined);
+
+	onMount(() => {
+		toolsStore.subscribe((tools) => currentTool = tools[toolIndex]);
+	})
 	
 	$effect(() => {
 		toolsStore.update(tools =>
-			tools.map(t => {
-				if (t.positionIndex === toolIndex){
-					const newTool = { ...t, color: color, width: width };
-					currentTool = newTool;
-					return newTool;
+			tools.map((t, index) => {
+				if (index === toolIndex){
+					return { ...t, color: color, width: width };
 				}
 				return t
 			})
 		);
-	})
+	});
 
 	function selectTool() {
-		currentTool = tool;
+		toolsStore.update(tools => 
+			tools.map((t, index) => { 
+				if (index === toolIndex) {
+					return { ...t, selected: true };
+				}
+				return { ...t, selected: false };
+			})
+		);
+
 		modeStore.set(Mode.DRAWING)
 	}
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class={`tool ${tool.positionIndex === currentTool.positionIndex ? 'selected' : ''}`} role="button" tabindex="0" onclick={selectTool}>
-	{#if tool.positionIndex === currentTool.positionIndex && tool.type === StrokeToolType.PEN}
+<div class="tool" class:selected={currentTool?.selected} role="button" tabindex="0" onclick={selectTool}>
+	{#if currentTool?.selected && tool.type === StrokeToolType.PEN}
 		<div  class="tool-popover" role="button" tabindex="0" onclick={() => {popoverOpen = !popoverOpen}}>
-			<ArrowSVG color="#000000" width="15px" height="15px"></ArrowSVG>
+			<ArrowSVG color="#000000" width="15px" height="15px" />
 		</div>
 	{/if}
 	
 	{#if tool.type === StrokeToolType.PEN}
-		<PenSVG color={tool.color} width="75px" height="75px"></PenSVG>
+		<PenSVG color={tool.color} width="75px" height="75px" />
 	{/if}
 	{#if tool.type === StrokeToolType.ERASER}
-		<EraserSVG width="60px" height="60px"></EraserSVG>
+		<EraserSVG width="60px" height="60px" />
 	{/if}
 
 	{#if popoverOpen}
-    <div class="popover">
-		<label>
-			Width
-			<input type="range" min="1" max="10" bind:value={width} />
-		</label>
+		<div class="popover">
+			<label>
+				Width
+				<input type="range" min="1" max="10" bind:value={width} />
+			</label>
 
-		<label>
-			Color
-			<input type="color" bind:value={color} />
-		</label>
-    </div>
-  {/if}
+			<label>
+				Color
+				<input type="color" bind:value={color} />
+			</label>
+		</div>
+  	{/if}
 </div>	
 
 <style>

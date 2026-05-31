@@ -21,6 +21,7 @@ export interface StrokeTool {
 	width: number,
 	type: StrokeToolType,
 	positionIndex: number,
+	selected: boolean,
 }
 
 export enum Mode {
